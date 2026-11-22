@@ -56,7 +56,7 @@ kbd{font-family:var(--mono);font-size:.9em;border:1px solid var(--strong);border
 .tt tr:hover td{background:var(--soft)}
 @media (max-width:900px),(max-height:560px){main{height:auto}.app{grid-template-columns:1fr}.tw{max-height:360px}}
 </style>
-<link rel="stylesheet" href="perceptron.css">
+<link rel="stylesheet" href="perceptron.css?v=1.1.1">
 </head>
 <body>
 <main>
@@ -248,7 +248,8 @@ function dibujarPlano() {
   $('plot-pts').innerHTML = X.map((x, i) => {
     const t = T[g][i], cur = ult && ult.i === i;
     return (cur ? `<circle cx="${sx(x[0])}" cy="${sy(x[1])}" r="16" fill="none" stroke="#1f1e1c" stroke-width="1.6"/>` : '') +
-           `<circle cx="${sx(x[0])}" cy="${sy(x[1])}" r="10" fill="${t ? '#1D9E75' : '#D85A30'}"/>`;
+           `<circle cx="${sx(x[0])}" cy="${sy(x[1])}" r="10" fill="${t ? '#1D9E75' : '#D85A30'}"/>` +
+           `<text x="${sx(x[0]) + (x[0] ? -18 : 18)}" y="${sy(x[1]) - 20}" text-anchor="${x[0] ? 'end' : 'start'}" font-family="var(--mono)" font-size="14" font-weight="600" fill="var(--text)" paint-order="stroke" stroke="var(--card)" stroke-width="4" stroke-linejoin="round">(${x[0]},${x[1]})</text>`;
   }).join('');
   $('eqn').textContent = s ? `Recta: ${fmt(W.w1)}·x₁ + ${par(W.w2)}·x₂ + ${par(W.b)} = 0` : 'w₁ = w₂ = 0: no hay recta (todos los puntos reciben la misma clase)';
 }

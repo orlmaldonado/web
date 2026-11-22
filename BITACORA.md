@@ -1,6 +1,6 @@
 # Bitácora de Web Personal
 
-Contexto operativo para continuar sin buscar conversaciones anteriores. Actualizar con cada entrega. Fechas en hora de Colombia (America/Bogota). Entrega actual: **1.1 · 22 de noviembre de 2026**.
+Contexto operativo para continuar sin buscar conversaciones anteriores. Actualizar con cada entrega. Fechas en hora de Colombia (America/Bogota). Entrega actual: **1.1.1 · 22 de noviembre de 2026**.
 
 ## Identificación
 
@@ -28,11 +28,21 @@ Los números de versión son etiquetas documentales, no tags Git. Fechas e ident
 | 0.1 | 8 nov. 2026, 19:54 | Publicación inicial | [c0c658d](https://github.com/orlmaldonado/web/commit/c0c658d88d9825c77d6d45f2a402ee2b9c389841) |
 | 0.2 | 8 nov. 2026, 19:58 | Fotografía de perfil | [3646fe0](https://github.com/orlmaldonado/web/commit/3646fe0b8961520301290b9d0994c532cd5db750) |
 | 1.0 | 10 nov. 2026, 11:20 | Diseño académico azul y páginas separadas de docencia, investigación y blog | [c1e7a0e](https://github.com/orlmaldonado/web/commit/c1e7a0efa7af5d70df08d8c9f6424a22e23b1279) |
-| 1.1 | 22 nov. 2026 | Recursos, perceptrón y documentación de continuidad | Consultar estado local e historial de `main` |
+| 1.1 | 22 nov. 2026 | Recursos, perceptrón y documentación de continuidad | [606dd01](https://github.com/orlmaldonado/web/commit/606dd01f39d64e68868a99e731fbe9de16d61f5b) |
+| 1.1.1 | 22 nov. 2026 | Tabla compacta de Recursos, actualización de caché CSS y coordenadas del cuadrado unitario | Consultar estado local e historial de `main` |
 
 Base anterior a 1.1: `c1e7a0efa7af5d70df08d8c9f6424a22e23b1279`. Árbol Git: `4f5acdaf6f574a0dd2a0e2ca421625994aced6b0`.
 
 Para restaurar una versión, consultar sus archivos y crear un nuevo commit sobre la cabeza vigente. Evitar restablecimientos forzados: Git conserva las versiones publicadas.
+
+## Correcciones de 1.1.1
+
+- El usuario reportó que Recursos mostraba un grafo enorme y la información debajo, y pidió que el recurso apareciera en una tabla compacta. Se sustituyó la tarjeta ilustrada por una tabla semántica con columnas Recurso, Descripción y Acceso. No volver a añadir una ilustración grande al catálogo sin solicitarlo el usuario.
+- Se eliminaron la ilustración SVG y sus estilos. La tabla permite desplazamiento horizontal en pantallas pequeñas y conserva colores, encabezado y pie del sitio.
+- Los archivos de GitHub coincidían con los locales. Una hoja CSS anterior en caché es una posible explicación del aspecto reportado, no una causa demostrada. Todas las páginas principales ahora enlazan `styles.css?v=1.1.1`; el simulador versiona también su hoja de estilos. Al modificar CSS en próximas entregas, actualizar esta versión en todas las referencias correspondientes.
+- Antes de terminar la corrección de Recursos, el usuario pidió rotular los puntos del cuadrado unitario. El plano principal ahora muestra `(0,0)`, `(0,1)`, `(1,0)` y `(1,1)` junto a los puntos, también durante el entrenamiento. Se interpretó `(1,21)` como errata por `(1,1)` y se informó al usuario.
+- Las etiquetas se colocan por encima y hacia el interior del cuadrado, con contorno claro para distinguirlas del sombreado y la frontera de decisión. No cambia la distribución del simulador ni la regla de aprendizaje.
+- El navegador integrado volvió a permitir visitar la web pública; se inspeccionó la versión previa a la corrección. El resultado de la comprobación posterior a publicar se registra en `ESTADO_PUBLICACION.local.json`.
 
 ## Cambios de 1.1 y autorización
 
@@ -85,12 +95,12 @@ Diseño académico sobrio, con fondo claro, azul marino y acentos arena, dorado 
 | Texto y navegación | DM Sans; alternativas sans-serif |
 | Títulos editoriales | Libre Baskerville; alternativas Georgia/serif |
 | Ancho máximo del sitio | 1160 px; margen interno de escritorio: 32 px |
-| Adaptación | Ajustes a 800 y 650 px; tarjeta de Recursos a 700 px |
+| Adaptación | Ajustes a 800 y 650 px; tabla de Recursos con desplazamiento horizontal en pantallas pequeñas |
 
 - HTML5, idioma español y UTF-8. Preservar tildes y símbolos matemáticos.
 - Enlaces relativos porque el sitio vive bajo `/web/`; desde el simulador usar `../recursos.html` y `../index.html`.
 - Mantener `aria-current="page"` en el enlace activo del menú.
-- Recursos comparte encabezado y pie del sitio. Añadir nuevas tarjetas con los estilos existentes; no se han solicitado filtros ni buscador.
+- Recursos comparte encabezado y pie del sitio. Añadir nuevas filas a su tabla compacta; no se han solicitado ilustraciones, filtros ni buscador.
 - Fuentes de Google Fonts con alternativas locales. No hay compilación, backend, formularios, cuentas ni base de datos.
 - No añadir títulos académicos, publicaciones o datos biográficos que no haya respaldado el usuario.
 
@@ -121,7 +131,7 @@ Diseño académico sobrio, con fondo claro, azul marino y acentos arena, dorado 
 
 1. Leer bitácora, README, AGENTS y el estado local de publicación.
 2. Leer la cabeza actual de `main` y los archivos afectados; podrían haber cambiado desde la última sesión.
-3. Editar la raíz activa. Para nuevos recursos, incorporar archivos y tarjeta en `recursos.html`.
+3. Editar la raíz activa. Para nuevos recursos, incorporar archivos y una fila en la tabla de `recursos.html`. Si cambia CSS, actualizar su versión en los enlaces de todas las páginas afectadas.
 4. Revisar enlaces relativos, UTF-8, controles y distribución afectados; comprobar escritorio y móvil cuando sea posible.
 5. Si el usuario pide revisión local, esperar su aprobación. Publicar únicamente el alcance solicitado o aprobado.
 6. Crear un commit coherente sobre la cabeza vigente, conservando el árbol remoto y los archivos ajenos al cambio. No publicar copias históricas ni estado local.
