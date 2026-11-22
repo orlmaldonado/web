@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Simulador interactivo del perceptrón simple: aprende AND y OR paso a paso y explora la limitación de XOR. Recurso de José Orlando Maldonado Bautista.">
+<title>Perceptrón simple: AND, OR y XOR</title>
+<style>
+:root{--bg:#f7f6f2;--card:#fff;--text:#1f1e1c;--muted:#6b6a64;--faint:#9a988f;--border:#e2e0d8;--strong:#c9c6bb;--soft:#f1efe8;--teal:#1D9E75;--coral:#D85A30;--accent:#185FA5;--accent-bg:#E6F1FB;--danger:#A32D2D;--ok:#0F6E56;--l1:#378ADD;--l2:#7F77DD;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,sans-serif}
+body.pres{font-size:19px}
+main{display:flex;flex-direction:column;height:100vh;padding:10px 16px 12px;gap:10px}
+.top{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.top h1{font-size:1.15em;font-weight:600;margin:0 8px 0 0}
+.app{flex:1;min-height:0;display:grid;grid-template-columns:minmax(300px,31%) minmax(0,1fr);gap:10px}
+.col{display:flex;flex-direction:column;gap:10px;min-height:0}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;min-width:0}
+.grow{flex:1;min-height:0;display:flex;flex-direction:column}
+.card h3{font-size:.82em;font-weight:600;margin:0 0 6px;color:var(--muted)}
+.row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.grp{display:flex;gap:4px}
+button{font:inherit;font-size:.88em;padding:5px 12px;border-radius:7px;border:1px solid var(--strong);background:var(--card);color:var(--text);cursor:pointer}
+button:hover{background:var(--soft)}
+button.on{background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}
+label.f{display:flex;align-items:center;gap:6px;font-size:.82em;color:var(--muted)}
+input[type=number]{width:4.4em;font:inherit;font-size:.88em;padding:3px 5px;border:1px solid var(--strong);border-radius:6px;font-family:var(--mono);background:var(--card);color:var(--text)}
+input[type=range]{width:6em}
+details.ini{position:relative;font-size:.88em}
+details.ini summary{cursor:pointer;color:var(--muted);padding:5px 10px;border:1px solid var(--strong);border-radius:7px;list-style:none;background:var(--card)}
+.inibox{position:absolute;z-index:5;top:120%;left:0;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:grid;grid-template-columns:auto auto;gap:8px 12px;box-shadow:0 6px 20px rgba(0,0,0,.08)}
+.calc{font-family:var(--mono);font-size:.88em;line-height:1.65;background:var(--soft);border-radius:8px;padding:8px 12px;overflow-x:auto;white-space:nowrap}
+.m{color:var(--muted)}
+.leg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.75em;color:var(--muted)}
+.dot{display:inline-block;width:.75em;height:.75em;border-radius:50%;vertical-align:-1px;margin-right:4px}
+.eq{font-family:var(--mono);font-size:.78em;color:var(--muted);margin-top:2px}
+.tw{flex:1;min-height:0;overflow:auto;border:1px solid var(--border);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-family:var(--mono);font-size:.86em}
+th{position:sticky;top:0;background:var(--soft);font-weight:500;color:var(--muted);text-align:right;padding:5px 10px;border-bottom:1px solid var(--strong)}
+td{text-align:right;padding:3px 10px;border-bottom:1px solid var(--border)}
+tr.ep td{border-top:2px solid var(--strong)}
+tr.cur td{background:var(--accent-bg)}
+td.bad{color:var(--danger);font-weight:600}
+td.it{color:var(--faint)}
+.bars{display:flex;align-items:flex-end;gap:3px;height:30px}
+.bars div{width:11px;border-radius:2px}
+#status{font-size:.85em;margin-left:auto}
+.extra{max-width:1300px;margin:0 auto;padding:8px 16px 40px}
+.extra .sub{color:var(--muted);margin:0 0 14px;max-width:60em}
+h2.sec{font-size:1.2em;font-weight:600;margin:20px 0 4px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:14px}
+.keys{font-size:.8em;color:var(--faint);margin-top:24px}
+kbd{font-family:var(--mono);font-size:.9em;border:1px solid var(--strong);border-bottom-width:2px;border-radius:4px;padding:0 5px;background:var(--card);color:var(--muted)}
+.tt td,.tt th{text-align:center}
+.tt tr{cursor:pointer}
+.tt tr:hover td{background:var(--soft)}
+@media (max-width:900px),(max-height:560px){main{height:auto}.app{grid-template-columns:1fr}.tw{max-height:360px}}
+</style>
+<link rel="stylesheet" href="perceptron.css">
+</head>
+<body>
+<main>
+<div class="sim-context">
+  <nav aria-label="Ruta de navegación"><a class="sim-author" href="../index.html">José Orlando Maldonado</a><span aria-hidden="true">/</span><a href="../recursos.html">Recursos</a><span aria-hidden="true">/</span><span aria-current="page">Perceptrón simple</span></nav>
+  <span>Sistemas Inteligentes</span>
+</div>
+<header class="top">
+  <h1>Perceptrón simple</h1>
+  <div class="grp" id="gates"><button data-g="AND" class="on">AND</button><button data-g="OR">OR</button><button data-g="XOR">XOR</button></div>
+  <button id="bStep">Paso</button><button id="bEp">Época</button><button id="bPlay">Reproducir</button><button id="bReset">Reiniciar</button>
+  <label class="f">velocidad <input id="spd" type="range" min="100" max="1500" step="100" value="700"></label>
+  <details class="ini"><summary>Valores iniciales ▾</summary><div class="inibox">
+    <label class="f">w₁ <input id="iw1" type="number" step="0.1" value="0.2"></label>
+    <label class="f">w₂ <input id="iw2" type="number" step="0.1" value="-0.4"></label>
+    <label class="f">b <input id="ib" type="number" step="0.1" value="0.1"></label>
+    <label class="f">η <input id="ieta" type="number" step="0.05" min="0.05" value="0.2"></label>
+    <label class="f">máx. épocas <input id="imax" type="number" step="1" min="1" value="20"></label>
+  </div></details>
+  <button id="bPres" style="margin-left:auto">Presentación</button>
+</header>
+<div class="app">
+  <div class="col">
+    <div class="card"><h3>El perceptrón</h3><svg id="diag" role="img" aria-label="Grafo del perceptrón con entradas, pesos, sesgo y salida" viewBox="0 0 400 235" style="width:100%;display:block"></svg></div>
+    <div class="card grow"><h3>Frontera de decisión</h3>
+      <svg id="plot" role="img" aria-label="Plano con la frontera de decisión y las cuatro entradas lógicas" viewBox="0 0 320 320" style="flex:1;min-height:0;width:100%"></svg>
+      <div class="leg"><span><span class="dot" style="background:var(--teal)"></span>t = 1</span><span><span class="dot" style="background:var(--coral)"></span>t = 0</span><span><span class="dot" style="background:var(--teal);opacity:.3;border-radius:2px"></span>ŷ = 1</span><span>- - - anterior</span></div>
+      <div class="eq" id="eqn"></div>
+    </div>
+  </div>
+  <div class="col">
+    <div class="card">
+      <div class="row" style="margin-bottom:6px"><h3 style="margin:0">Cálculo del paso actual</h3><div id="status" role="status" aria-live="polite"></div></div>
+      <div class="calc" id="calc"></div>
+      <div class="row" style="margin-top:8px"><span class="m" style="font-size:.8em">Errores por época</span><div class="bars" id="bars"></div></div>
+    </div>
+    <div class="card grow"><h3>Prueba de escritorio <span class="m" style="font-weight:400">(w₁, w₂ y b después de aplicar la regla)</span></h3>
+      <div class="tw" id="tw"><table><thead><tr><th>iter.</th><th>época</th><th>x₁</th><th>x₂</th><th>t</th><th>z</th><th>ŷ</th><th>e</th><th>w₁</th><th>w₂</th><th>b</th></tr></thead><tbody id="tbody"></tbody></table></div>
+    </div>
+  </div>
+</div>
+</main>
+<section class="extra">
+<h2 class="sec">¿Y si agregamos una capa?</h2>
+<p class="sub">Ninguna recta separa XOR, pero dos sí. Con dos perceptrones ocultos, h₁ = OR y h₂ = NAND, y un perceptrón de salida que hace AND, la red resuelve XOR. Los pesos aquí están fijos, no aprendidos. Haz clic en una fila de la tabla para seguir una entrada por la red.</p>
+<div class="grid2">
+  <div class="card"><h3>Red con una capa oculta</h3><svg id="mdiag" viewBox="0 0 420 250" style="width:100%"></svg>
+    <table class="tt" style="margin-top:10px"><thead><tr><th>x₁</th><th>x₂</th><th>h₁ (OR)</th><th>h₂ (NAND)</th><th>ŷ</th><th>t (XOR)</th></tr></thead><tbody id="mtab"></tbody></table>
+  </div>
+  <div class="card"><h3>Dos rectas en el espacio de entrada</h3><svg id="mplot" viewBox="0 0 320 320" style="width:100%;max-height:360px"></svg>
+    <div class="leg"><span style="color:var(--l1)">— h₁: x₁ + x₂ − 0.5 = 0</span><span style="color:var(--l2)">— h₂: −x₁ − x₂ + 1.5 = 0</span></div>
+  </div>
+  <div class="card"><h3>Espacio oculto (h₁, h₂): ahora sí basta una recta</h3><svg id="hplot" viewBox="0 0 320 320" style="width:100%;max-height:360px"></svg>
+    <div class="leg"><span>— salida: h₁ + h₂ − 1.5 = 0</span><span>(0,1) y (1,0) caen en el mismo punto</span></div>
+  </div>
+</div>
+
+<p class="keys">Atajos: <kbd>espacio</kbd> paso · <kbd>E</kbd> época · <kbd>P</kbd> reproducir/pausa · <kbd>R</kbd> reiniciar · <kbd>F</kbd> modo presentación</p>
+<p class="sim-footer"><a href="../recursos.html">Volver a Recursos</a> · José Orlando Maldonado Bautista · Universidad de Pamplona</p>
+</section>
+
+<script>
+const X = [[0,0],[0,1],[1,0],[1,1]];
+const T = {AND:[0,0,0,1], OR:[0,1,1,1], XOR:[0,1,1,0]};
+const $ = id => document.getElementById(id);
+const fmt = v => { v = Math.abs(v) < 0.005 ? 0 : v; return v.toFixed(2).replace('-', '−'); };
+const par = v => v < 0 ? '(' + fmt(v) + ')' : fmt(v);
+const escalon = z => z >= 0 ? 1 : 0;
+
+/* ---------- geometría del plano ---------- */
+const LO = -0.3, HI = 1.3;
+const sx = x => 30 + (x - LO) * 168.75;
+const sy = y => 290 - (y - LO) * 168.75;
+const CAJA = [[LO,LO],[HI,LO],[HI,HI],[LO,HI]];
+
+function recortar(poli, a, b, c) {           // conserva a·x + b·y + c >= 0
+  const out = [], f = q => a*q[0] + b*q[1] + c;
+  for (let k = 0; k < poli.length; k++) {
+    const p = poli[k], q = poli[(k+1) % poli.length], fp = f(p), fq = f(q);
+    if (fp >= 0) out.push(p);
+    if ((fp >= 0) !== (fq >= 0)) { const s = fp / (fp - fq); out.push([p[0] + s*(q[0]-p[0]), p[1] + s*(q[1]-p[1])]); }
+  }
+  return out;
+}
+function segmento(a, b, c) {                 // recta a·x + b·y + c = 0 dentro de la caja
+  const L = [], ok = v => v >= LO - 1e-9 && v <= HI + 1e-9;
+  if (Math.abs(b) > 1e-9) [LO, HI].forEach(x => { const y = (-c - a*x) / b; if (ok(y)) L.push([x, y]); });
+  if (Math.abs(a) > 1e-9) [LO, HI].forEach(y => { const x = (-c - b*y) / a; if (ok(x)) L.push([x, y]); });
+  return L.length >= 2 ? [L[0], L[L.length - 1]] : null;
+}
+const puntos = P => P.map(q => sx(q[0]).toFixed(1) + ',' + sy(q[1]).toFixed(1)).join(' ');
+const linea = (s, est) => s ? `<line x1="${sx(s[0][0])}" y1="${sy(s[0][1])}" x2="${sx(s[1][0])}" y2="${sy(s[1][1])}" ${est}/>` : '';
+
+function ejes(svg, xl, yl) {
+  svg.innerHTML = `
+  <g id="${svg.id}-reg"></g>
+  <line x1="20" y1="${sy(0)}" x2="305" y2="${sy(0)}" stroke="#e2e0d8"/>
+  <line x1="${sx(0)}" y1="15" x2="${sx(0)}" y2="300" stroke="#e2e0d8"/>
+  <rect x="${sx(0)}" y="${sy(1)}" width="${sx(1)-sx(0)}" height="${sy(0)-sy(1)}" fill="none" stroke="#c9c6bb" stroke-dasharray="4 4"/>
+  <text x="${sx(0)}" y="${sy(0)+18}" text-anchor="middle" font-size="11" fill="#9a988f">0</text>
+  <text x="${sx(1)}" y="${sy(0)+18}" text-anchor="middle" font-size="11" fill="#9a988f">1</text>
+  <text x="${sx(0)-14}" y="${sy(0)+4}" text-anchor="end" font-size="11" fill="#9a988f">0</text>
+  <text x="${sx(0)-14}" y="${sy(1)+4}" text-anchor="end" font-size="11" fill="#9a988f">1</text>
+  <text x="302" y="${sy(0)+18}" text-anchor="end" font-size="13" fill="#6b6a64">${xl}</text>
+  <text x="${sx(0)+8}" y="24" font-size="13" fill="#6b6a64">${yl}</text>
+  <g id="${svg.id}-lin"></g><g id="${svg.id}-pts"></g>`;
+}
+
+/* ---------- simulador del perceptrón ---------- */
+let g = 'AND', eta, MAX, W, ant, idx, ep, errEp, errs, done, ult, timer = null, nfilas;
+
+function reiniciar() {
+  parar();
+  const n = id => { const v = parseFloat($(id).value); return isNaN(v) ? 0 : v; };
+  W = {w1: n('iw1'), w2: n('iw2'), b: n('ib')};
+  eta = Math.max(0.01, n('ieta')); MAX = Math.max(1, Math.round(n('imax')));
+  ant = null; idx = 0; ep = 1; errEp = 0; errs = []; done = false; ult = null; nfilas = 0;
+  $('tbody').innerHTML = ''; $('status').innerHTML = '';
+  dibujar();
+}
+
+function paso() {
+  if (done) return;
+  const i = idx % 4, x = X[i], t = T[g][i];
+  const z = W.w1*x[0] + W.w2*x[1] + W.b, y = escalon(z), e = t - y, viejo = {...W};
+  W.w1 += eta*e*x[0]; W.w2 += eta*e*x[1]; W.b += eta*e;
+  if (e !== 0) { ant = viejo; errEp++; }
+  ult = {i, x, t, z, y, e, viejo};
+  agregarFila(i === 0, x, t, z, y, e);
+  idx++;
+  if (idx % 4 === 0) {
+    errs.push(errEp);
+    if (errEp === 0) { done = true; $('status').innerHTML = `<span style="color:var(--ok)">Convergió en la época ${ep} (iteración ${idx}): ${g} es linealmente separable</span>`; }
+    else if (ep >= MAX) { done = true; $('status').innerHTML = `<span style="color:var(--danger)">Sin convergencia tras ${MAX} épocas: ${g === 'XOR' ? 'ninguna recta separa XOR' : 'aumenta el máximo de épocas para continuar el entrenamiento'}</span>`; }
+    ep++; errEp = 0;
+  }
+  if (done) parar();
+  dibujar();
+}
+function epoca() { if (done) return; do { paso(); } while (idx % 4 !== 0 && !done); }
+function parar() { if (timer) { clearInterval(timer); timer = null; } $('bPlay').textContent = 'Reproducir'; }
+function reproducir() {
+  if (timer) { parar(); return; }
+  if (done) return;
+  timer = setInterval(paso, +$('spd').value); $('bPlay').textContent = 'Pausa';
+}
+
+function agregarFila(nuevaEpoca, x, t, z, y, e) {
+  const prev = $('tbody').querySelector('tr.cur'); if (prev) prev.classList.remove('cur');
+  const tr = document.createElement('tr');
+  tr.className = 'cur' + (nuevaEpoca && nfilas > 0 ? ' ep' : '');
+  tr.innerHTML = `<td class="it">${idx + 1}</td><td>${ep}</td><td>${x[0]}</td><td>${x[1]}</td><td>${t}</td><td>${fmt(z)}</td><td>${y}</td><td class="${e ? 'bad' : ''}">${e}</td><td>${fmt(W.w1)}</td><td>${fmt(W.w2)}</td><td>${fmt(W.b)}</td>`;
+  $('tbody').appendChild(tr); nfilas++;
+  $('tw').scrollTop = $('tw').scrollHeight;
+}
+
+function dibujarDiagrama() {
+  const ent = [
+    {n:'x₁', y:55,  w:W.w1, k:'w₁', v: ult ? ult.x[0] : null, ly:44},
+    {n:'x₂', y:125, w:W.w2, k:'w₂', v: ult ? ult.x[1] : null, ly:116},
+    {n:'1',  y:195, w:W.b,  k:'b',  v: null, ly:214}];
+  let s = `<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0L10,5L0,10z" fill="#6b6a64"/></marker></defs>`;
+  ent.forEach(o => {
+    const c = o.w >= 0 ? 'var(--teal)' : 'var(--coral)', sw = 1 + 3.5*Math.min(Math.abs(o.w), 1.2);
+    s += `<line x1="68" y1="${o.y}" x2="210" y2="125" stroke="${c}" stroke-width="${sw}"/>`;
+    s += `<text x="136" y="${o.ly}" paint-order="stroke" stroke="#fff" stroke-width="5" text-anchor="middle" font-size="18" font-family="var(--mono)" fill="#1f1e1c">${o.k} = ${fmt(o.w)}</text>`;
+  });
+  ent.forEach(o => {
+    s += `<circle cx="50" cy="${o.y}" r="18" fill="#fff" stroke="#c9c6bb"/><text x="50" y="${o.y+5}" text-anchor="middle" font-size="19" fill="#1f1e1c">${o.n}</text>`;
+    if (o.v !== null) s += `<text x="16" y="${o.y+5}" text-anchor="middle" font-size="19" font-family="var(--mono)" fill="var(--accent)">${o.v}</text>`;
+  });
+  s += `<circle cx="235" cy="125" r="25" fill="#fff" stroke="#c9c6bb"/><text x="235" y="133" text-anchor="middle" font-size="26" fill="#1f1e1c">Σ</text>`;
+  s += `<text x="235" y="176" text-anchor="middle" font-size="18" font-family="var(--mono)" fill="#6b6a64">${ult ? 'z = ' + fmt(ult.z) : 'z'}</text>`;
+  s += `<line x1="260" y1="125" x2="288" y2="125" stroke="#6b6a64" stroke-width="1.5" marker-end="url(#ar)"/>`;
+  s += `<rect x="290" y="104" width="42" height="42" rx="5" fill="#fff" stroke="#c9c6bb"/><path d="M298,136 H311 V114 H324" fill="none" stroke="#1f1e1c" stroke-width="1.6"/>`;
+  s += `<text x="311" y="94" text-anchor="middle" font-size="14" fill="#9a988f">escalón</text>`;
+  s += `<line x1="332" y1="125" x2="352" y2="125" stroke="#6b6a64" stroke-width="1.5" marker-end="url(#ar)"/>`;
+  const yc = ult ? (ult.y ? 'var(--teal)' : 'var(--coral)') : '#c9c6bb';
+  s += `<circle cx="373" cy="125" r="18" fill="#fff" stroke="${yc}" stroke-width="${ult ? 2.5 : 1}"/><text x="373" y="131" text-anchor="middle" font-size="20" fill="#1f1e1c">${ult ? ult.y : 'ŷ'}</text>`;
+  if (ult) s += `<text x="373" y="166" text-anchor="middle" font-size="16" fill="#6b6a64">t = ${ult.t}</text>`;
+  $('diag').innerHTML = s;
+}
+
+function dibujarPlano() {
+  $('plot-reg').innerHTML = `<polygon points="${puntos(recortar(CAJA, W.w1, W.w2, W.b))}" fill="#1D9E75" fill-opacity="0.15"/>`;
+  const s = segmento(W.w1, W.w2, W.b);
+  $('plot-lin').innerHTML = (ant ? linea(segmento(ant.w1, ant.w2, ant.b), 'stroke="#9a988f" stroke-width="1.6" stroke-dasharray="5 4"') : '') +
+                            linea(s, 'stroke="#1f1e1c" stroke-width="2.6"');
+  $('plot-pts').innerHTML = X.map((x, i) => {
+    const t = T[g][i], cur = ult && ult.i === i;
+    return (cur ? `<circle cx="${sx(x[0])}" cy="${sy(x[1])}" r="16" fill="none" stroke="#1f1e1c" stroke-width="1.6"/>` : '') +
+           `<circle cx="${sx(x[0])}" cy="${sy(x[1])}" r="10" fill="${t ? '#1D9E75' : '#D85A30'}"/>`;
+  }).join('');
+  $('eqn').textContent = s ? `Recta: ${fmt(W.w1)}·x₁ + ${par(W.w2)}·x₂ + ${par(W.b)} = 0` : 'w₁ = w₂ = 0: no hay recta (todos los puntos reciben la misma clase)';
+}
+
+function dibujarCalculo() {
+  if (!ult) {
+    $('calc').innerHTML = `<span class="m">pesos iniciales</span> w₁ = ${fmt(W.w1)}, w₂ = ${fmt(W.w2)}, b = ${fmt(W.b)}, η = ${fmt(eta)}<br>` +
+      `<span class="m">salida</span> ŷ = 1 si z ≥ 0, si no ŷ = 0<br><span class="m">regla</span> w ← w + η·(t − ŷ)·x<br><span class="m">Presiona Paso o la barra espaciadora.</span>`;
+    return;
+  }
+  const L = ult, o = L.viejo, e = L.e;
+  $('calc').innerHTML =
+    `<span class="m">iteración ${idx}, época ${errs.length + (idx % 4 === 0 ? 0 : 1)}, muestra</span> (x₁, x₂) = (${L.x[0]}, ${L.x[1]}), t = ${L.t}<br>` +
+    `z = ${par(o.w1)}·${L.x[0]} + ${par(o.w2)}·${L.x[1]} + ${par(o.b)} = ${fmt(L.z)} → ŷ = ${L.y}<br>` +
+    `e = t − ŷ = ${L.t} − ${L.y} = <b style="color:${e ? 'var(--danger)' : 'var(--ok)'}">${e}</b>${e ? '' : ' <span class="m">→ acierto, los pesos no cambian</span>'}<br>` +
+    `w₁ ← ${fmt(o.w1)} + ${fmt(eta)}·(${e})·${L.x[0]} = ${fmt(W.w1)} &nbsp; ` +
+    `w₂ ← ${fmt(o.w2)} + ${fmt(eta)}·(${e})·${L.x[1]} = ${fmt(W.w2)} &nbsp; ` +
+    `b ← ${fmt(o.b)} + ${fmt(eta)}·(${e}) = ${fmt(W.b)}`;
+}
+
+function dibujar() {
+  dibujarDiagrama(); dibujarPlano(); dibujarCalculo();
+  $('bars').innerHTML = errs.length ? errs.map((n, i) => `<div title="época ${i+1}: ${n} errores" style="height:${3 + n*6.5}px;background:${n ? '#D85A30' : '#1D9E75'}"></div>`).join('')
+                                    : '<span class="m" style="font-size:.8em">—</span>';
+  if (!done && !$('status').innerHTML.includes('Convergió')) $('status').innerHTML = `<span class="m">siguiente: iteración ${idx + 1}, época ${ep}, muestra ${idx % 4 + 1} de 4</span>`;
+}
+
+/* ---------- red de dos capas para XOR ---------- */
+const OC = [{n:'h₁', w:[1,1], b:-0.5, c:'#378ADD'}, {n:'h₂', w:[-1,-1], b:1.5, c:'#7F77DD'}];
+const SAL = {w:[1,1], b:-1.5};
+const red = x => { const h = OC.map(o => escalon(o.w[0]*x[0] + o.w[1]*x[1] + o.b)); return {h, y: escalon(SAL.w[0]*h[0] + SAL.w[1]*h[1] + SAL.b)}; };
+let sel = null;
+
+function dibujarRed() {
+  const r = sel !== null ? red(X[sel]) : null, xv = sel !== null ? X[sel] : null;
+  const N = {x1:[50,70], x2:[50,180], h1:[210,70], h2:[210,180], y:[360,125]};
+  const A = [['x1','h1',1],['x2','h1',1],['x1','h2',-1],['x2','h2',-1],['h1','y',1],['h2','y',1]];
+  let s = '';
+  A.forEach(([a, b, w]) => {
+    const [x1, y1] = N[a], [x2, y2] = N[b], fr = a[0] === 'h' ? 0.55 : 0.28, lx = x1 + fr*(x2-x1), ly = y1 + fr*(y2-y1) - 7;
+    s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${w > 0 ? '#1D9E75' : '#D85A30'}" stroke-width="2.4"/>`;
+    s += `<text x="${lx}" y="${ly}" text-anchor="middle" font-size="12" font-family="var(--mono)" fill="#1f1e1c" paint-order="stroke" stroke="#fff" stroke-width="5">${fmt(w)}</text>`;
+  });
+  const nodo = (k, txt, val, sub) => {
+    const [x, y] = N[k];
+    s += `<circle cx="${x}" cy="${y}" r="21" fill="#fff" stroke="${val === null ? '#c9c6bb' : (val ? '#1D9E75' : '#D85A30')}" stroke-width="${val === null ? 1 : 2.5}"/>`;
+    s += `<text x="${x}" y="${y+5}" text-anchor="middle" font-size="15" fill="#1f1e1c">${txt}</text>`;
+    if (sub) s += `<text x="${k === 'h1' ? x - 12 : x}" y="${k === 'h1' ? y - 32 : y + 40}" text-anchor="${k === 'h1' ? 'end' : 'middle'}" font-size="12" font-family="var(--mono)" fill="#6b6a64">${sub}</text>`;
+    if (val !== null) { const vx = k[0] === 'x' ? x - 36 : k === 'y' ? x + 34 : x + 24, vy = k[0] === 'h' ? y - 22 : y + 5;
+      s += `<text x="${vx}" y="${vy}" text-anchor="middle" font-size="15" font-family="var(--mono)" fill="var(--accent)" paint-order="stroke" stroke="#fff" stroke-width="5">${val}</text>`; }
+  };
+  nodo('x1', 'x₁', xv ? xv[0] : null); nodo('x2', 'x₂', xv ? xv[1] : null);
+  nodo('h1', 'h₁', r ? r.h[0] : null, 'b = −0.5 (OR)'); nodo('h2', 'h₂', r ? r.h[1] : null, 'b = 1.5 (NAND)');
+  nodo('y', 'ŷ', r ? r.y : null, 'b = −1.5 (AND)');
+  $('mdiag').innerHTML = s;
+
+  $('mtab').innerHTML = X.map((x, i) => { const q = red(x);
+    return `<tr data-i="${i}" class="${sel === i ? 'cur' : ''}"><td>${x[0]}</td><td>${x[1]}</td><td>${q.h[0]}</td><td>${q.h[1]}</td><td>${q.y}</td><td>${T.XOR[i]}</td></tr>`; }).join('');
+  $('mtab').querySelectorAll('tr').forEach(tr => tr.onclick = () => { const i = +tr.dataset.i; sel = sel === i ? null : i; dibujarRed(); });
+
+  let band = recortar(recortar(CAJA, 1, 1, -0.5), -1, -1, 1.5);
+  $('mplot-reg').innerHTML = `<polygon points="${puntos(band)}" fill="#1D9E75" fill-opacity="0.15"/>`;
+  $('mplot-lin').innerHTML = OC.map(o => linea(segmento(o.w[0], o.w[1], o.b), `stroke="${o.c}" stroke-width="2.4"`)).join('');
+  $('mplot-pts').innerHTML = X.map((x, i) => (sel === i ? `<circle cx="${sx(x[0])}" cy="${sy(x[1])}" r="16" fill="none" stroke="#1f1e1c" stroke-width="1.6"/>` : '') +
+    `<circle cx="${sx(x[0])}" cy="${sy(x[1])}" r="10" fill="${T.XOR[i] ? '#1D9E75' : '#D85A30'}"/>`).join('');
+
+  $('hplot-reg').innerHTML = `<polygon points="${puntos(recortar(CAJA, 1, 1, -1.5))}" fill="#1D9E75" fill-opacity="0.15"/>`;
+  $('hplot-lin').innerHTML = linea(segmento(1, 1, -1.5), 'stroke="#1f1e1c" stroke-width="2.4"');
+  const etiquetas = {'0,1':'(0,0)', '1,1':'(0,1) y (1,0)', '1,0':'(1,1)'};
+  let hp = '';
+  X.forEach((x, i) => { const h = red(x).h; if (sel === i) hp += `<circle cx="${sx(h[0])}" cy="${sy(h[1])}" r="16" fill="none" stroke="#1f1e1c" stroke-width="1.6"/>`; });
+  Object.entries(etiquetas).forEach(([k, lab]) => { const [a, b] = k.split(',').map(Number), t = (a && b) ? 1 : 0;
+    hp += `<circle cx="${sx(a)}" cy="${sy(b)}" r="10" fill="${t ? '#1D9E75' : '#D85A30'}"/>`;
+    hp += `<text x="${sx(a) + (a ? -14 : 14)}" y="${sy(b) - 16}" text-anchor="${a ? 'end' : 'start'}" font-size="11" fill="#6b6a64">${lab}</text>`; });
+  $('hplot-pts').innerHTML = hp;
+}
+
+/* ---------- eventos ---------- */
+document.querySelectorAll('#gates button').forEach(b => b.onclick = () => {
+  g = b.dataset.g; document.querySelectorAll('#gates button').forEach(o => o.classList.toggle('on', o === b)); reiniciar();
+});
+$('bStep').onclick = paso; $('bEp').onclick = epoca; $('bPlay').onclick = reproducir; $('bReset').onclick = reiniciar;
+$('bPres').onclick = () => document.body.classList.toggle('pres');
+['iw1','iw2','ib','ieta','imax'].forEach(id => $(id).onchange = reiniciar);
+$('spd').oninput = () => { if (timer) { clearInterval(timer); timer = setInterval(paso, +$('spd').value); } };
+document.addEventListener('keydown', ev => {
+  if (ev.altKey || ev.ctrlKey || ev.metaKey || ev.target.closest('input, textarea, select, button, a, summary, [contenteditable]')) return;
+  const k = ev.key.toLowerCase();
+  if (ev.code === 'Space') { ev.preventDefault(); paso(); }
+  else if (k === 'e') epoca(); else if (k === 'p') reproducir(); else if (k === 'r') reiniciar();
+  else if (k === 'f') document.body.classList.toggle('pres');
+});
+
+ejes($('plot'), 'x₁', 'x₂'); ejes($('mplot'), 'x₁', 'x₂'); ejes($('hplot'), 'h₁', 'h₂');
+reiniciar(); dibujarRed();
+</script>
+</body>
+</html>
