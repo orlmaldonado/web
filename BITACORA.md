@@ -30,13 +30,17 @@ Los números de versión son etiquetas documentales, no tags Git. Fechas e ident
 | 1.0 | 10 nov. 2026, 11:20 | Diseño académico azul y páginas separadas de docencia, investigación y blog | [c1e7a0e](https://github.com/orlmaldonado/web/commit/c1e7a0efa7af5d70df08d8c9f6424a22e23b1279) |
 | 1.1 | 22 nov. 2026 | Recursos, perceptrón y documentación de continuidad | [606dd01](https://github.com/orlmaldonado/web/commit/606dd01f39d64e68868a99e731fbe9de16d61f5b) |
 | 1.1.1 | 22 nov. 2026 | Tabla compacta de Recursos, actualización de caché CSS y coordenadas del cuadrado unitario | [fb4a788](https://github.com/orlmaldonado/web/commit/fb4a7881d0d09e97c2b082853aa3a5ecbe7f5ff8) |
-| 1.1.2 | 22 nov. 2026 | Aviso de frontera fuera de vista y explicación de su posición y salida uniforme | Consultar estado local e historial de `main` |
+| 1.1.2 | 22 nov. 2026 | Aviso de frontera fuera de vista y explicación de su posición y salida uniforme | [1827126](https://github.com/orlmaldonado/web/commit/1827126e8740e3f8b4b489659eb8696b96bd922f) |
 
 Base anterior a 1.1: `c1e7a0efa7af5d70df08d8c9f6424a22e23b1279`. Árbol Git: `4f5acdaf6f574a0dd2a0e2ca421625994aced6b0`.
 
 Para restaurar una versión, consultar sus archivos y crear un nuevo commit sobre la cabeza vigente. Evitar restablecimientos forzados: Git conserva las versiones publicadas.
 
 ## Corrección de 1.1.2: recta fuera de vista
+
+**Publicación confirmada:** commit `1827126e8740e3f8b4b489659eb8696b96bd922f`, desplegado correctamente en [GitHub Pages / Actions 45053296828](https://github.com/orlmaldonado/web/actions/runs/45053296828). El usuario aprobó el resultado y solicitó completar este registro.
+
+**Verificación visual en la web pública:** resolución 1264 × 713, AND en la tercera iteración. Se observó la flecha roja hacia abajo, la ecuación con `x₂ = −0.75`, el aviso de salida uniforme 0 y el plano sin sombreado. Se conservaron las cuatro coordenadas y se vieron simultáneamente grafo, plano y tabla. Esta comprobación se suma a las pruebas de AND, OR y XOR descritas a continuación.
 
 - El usuario aportó `codigo_claude/animaciones/perceptron_simple.html` con una corrección preparada por Claude. Se comparó con la fuente activa y se integró únicamente el bloque de aviso y ecuación en `dibujarPlano()`.
 - No se sustituyó el archivo completo: la copia aportada no incluía el diseño del sitio, los enlaces, las coordenadas ni las correcciones anteriores de mensajes y atajos. Esas mejoras se conservaron.
