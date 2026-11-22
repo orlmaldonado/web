@@ -1,6 +1,6 @@
 # Bitácora de Web Personal
 
-Contexto operativo para continuar sin buscar conversaciones anteriores. Actualizar con cada entrega. Fechas en hora de Colombia (America/Bogota). Entrega actual: **1.1.1 · 22 de noviembre de 2026**.
+Contexto operativo para continuar sin buscar conversaciones anteriores. Actualizar con cada entrega. Fechas en hora de Colombia (America/Bogota). Entrega actual: **1.1.2 · 22 de noviembre de 2026**.
 
 ## Identificación
 
@@ -29,11 +29,25 @@ Los números de versión son etiquetas documentales, no tags Git. Fechas e ident
 | 0.2 | 8 nov. 2026, 19:58 | Fotografía de perfil | [3646fe0](https://github.com/orlmaldonado/web/commit/3646fe0b8961520301290b9d0994c532cd5db750) |
 | 1.0 | 10 nov. 2026, 11:20 | Diseño académico azul y páginas separadas de docencia, investigación y blog | [c1e7a0e](https://github.com/orlmaldonado/web/commit/c1e7a0efa7af5d70df08d8c9f6424a22e23b1279) |
 | 1.1 | 22 nov. 2026 | Recursos, perceptrón y documentación de continuidad | [606dd01](https://github.com/orlmaldonado/web/commit/606dd01f39d64e68868a99e731fbe9de16d61f5b) |
-| 1.1.1 | 22 nov. 2026 | Tabla compacta de Recursos, actualización de caché CSS y coordenadas del cuadrado unitario | Consultar estado local e historial de `main` |
+| 1.1.1 | 22 nov. 2026 | Tabla compacta de Recursos, actualización de caché CSS y coordenadas del cuadrado unitario | [fb4a788](https://github.com/orlmaldonado/web/commit/fb4a7881d0d09e97c2b082853aa3a5ecbe7f5ff8) |
+| 1.1.2 | 22 nov. 2026 | Aviso de frontera fuera de vista y explicación de su posición y salida uniforme | Consultar estado local e historial de `main` |
 
 Base anterior a 1.1: `c1e7a0efa7af5d70df08d8c9f6424a22e23b1279`. Árbol Git: `4f5acdaf6f574a0dd2a0e2ca421625994aced6b0`.
 
 Para restaurar una versión, consultar sus archivos y crear un nuevo commit sobre la cabeza vigente. Evitar restablecimientos forzados: Git conserva las versiones publicadas.
+
+## Corrección de 1.1.2: recta fuera de vista
+
+- El usuario aportó `codigo_claude/animaciones/perceptron_simple.html` con una corrección preparada por Claude. Se comparó con la fuente activa y se integró únicamente el bloque de aviso y ecuación en `dibujarPlano()`.
+- No se sustituyó el archivo completo: la copia aportada no incluía el diseño del sitio, los enlaces, las coordenadas ni las correcciones anteriores de mensajes y atajos. Esas mejoras se conservaron.
+- La recta sí se recalculaba al cambiar los pesos. Cuando quedaba fuera del intervalo visible `[-0.3,1.3]`, no había segmento que dibujar y la línea punteada anterior podía dar la impresión de una actualización fallida.
+- Ahora una flecha roja apunta hacia la frontera fuera de vista y muestra el aviso. La explicación inferior conserva la ecuación e indica la posición para rectas horizontales o verticales y la salida uniforme de los puntos.
+- Ejemplo verificado con los valores predeterminados: AND, iteración 3, `w1=0`, `w2=-0.40`, `b=-0.30`; frontera `x2=-0.75`, salida 0 en las cuatro entradas.
+- El sombreado existente ya representaba el semiplano actual. Se verificó que, cuando no hay frontera visible, la región esté vacía para salida 0 o cubra todo el plano para salida 1. También se comprobó el caso de pesos nulos, sin recta.
+- Pruebas sobre el código real con DOM mínimo: AND, 32 pasos hasta converger; OR, 20 pasos hasta converger; XOR, 80 pasos hasta el límite. Aviso, salida uniforme y coordenadas comprobados en cada paso. Se probaron adicionalmente rectas fuera de vista en las cuatro direcciones.
+- La secuencia observada con AND fue 3, 7, 14, 15 y 19; no coincide exactamente con la enumeración del texto aportado. La comprobación usa la geometría y los pesos reales, no esa lista como criterio de validez.
+- Se preservaron el tamaño del plano y la distribución de grafo, cuadrado y tabla. No cambió la hoja CSS; conserva su referencia versionada de 1.1.1.
+- `codigo_claude/` se conserva localmente como material de entrada y se excluye de la publicación. El resultado de Pages y la verificación visual final se registran en `ESTADO_PUBLICACION.local.json`.
 
 ## Correcciones de 1.1.1
 

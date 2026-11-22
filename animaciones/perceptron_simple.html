@@ -251,7 +251,23 @@ function dibujarPlano() {
            `<circle cx="${sx(x[0])}" cy="${sy(x[1])}" r="10" fill="${t ? '#1D9E75' : '#D85A30'}"/>` +
            `<text x="${sx(x[0]) + (x[0] ? -18 : 18)}" y="${sy(x[1]) - 20}" text-anchor="${x[0] ? 'end' : 'start'}" font-family="var(--mono)" font-size="14" font-weight="600" fill="var(--text)" paint-order="stroke" stroke="var(--card)" stroke-width="4" stroke-linejoin="round">(${x[0]},${x[1]})</text>`;
   }).join('');
-  $('eqn').textContent = s ? `Recta: ${fmt(W.w1)}·x₁ + ${par(W.w2)}·x₂ + ${par(W.b)} = 0` : 'w₁ = w₂ = 0: no hay recta (todos los puntos reciben la misma clase)';
+  let aviso = '';
+  if (!s && (Math.abs(W.w1) > 1e-9 || Math.abs(W.w2) > 1e-9)) {
+    const c = [0.5, 0.5], fc = W.w1*c[0] + W.w2*c[1] + W.b, n2 = W.w1*W.w1 + W.w2*W.w2;
+    let dx = -fc*W.w1/n2, dy = -fc*W.w2/n2; const d = Math.hypot(dx, dy); dx /= d; dy /= d;
+    const tmax = Math.min(dx ? (dx > 0 ? HI - 0.5 : 0.5 - LO) / Math.abs(dx) : 9, dy ? (dy > 0 ? HI - 0.5 : 0.5 - LO) / Math.abs(dy) : 9) - 0.06;
+    const ax = c[0] + dx*tmax, ay = c[1] + dy*tmax, bx = ax - dx*0.3, by = ay - dy*0.3;
+    aviso = `<line x1="${sx(bx)}" y1="${sy(by)}" x2="${sx(ax)}" y2="${sy(ay)}" stroke="#A32D2D" stroke-width="2.5" marker-end="url(#arrRed)"/>` +
+            `<text x="${Math.abs(dx) > Math.abs(dy) ? sx((ax + bx)/2) : sx(ax) + 10}" y="${Math.abs(dx) > Math.abs(dy) ? sy(ay) - 12 : sy(ay) + (dy < 0 ? -2 : 14)}" text-anchor="${Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 'start' : 'end') : 'start'}" font-size="12" fill="#A32D2D" paint-order="stroke" stroke="#fff" stroke-width="4">recta fuera de la vista</text>`;
+  }
+  $('plot-lin').innerHTML += `<defs><marker id="arrRed" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0L10,5L0,10z" fill="#A32D2D"/></marker></defs>` + aviso;
+  const clase = escalon(W.w1*0.5 + W.w2*0.5 + W.b);
+  let donde = '';
+  if (!s && Math.abs(W.w1) < 1e-9 && Math.abs(W.w2) > 1e-9) donde = ` en x₂ = ${fmt(-W.b / W.w2)}`;
+  if (!s && Math.abs(W.w2) < 1e-9 && Math.abs(W.w1) > 1e-9) donde = ` en x₁ = ${fmt(-W.b / W.w1)}`;
+  $('eqn').textContent = s ? `Recta: ${fmt(W.w1)}·x₁ + ${par(W.w2)}·x₂ + ${par(W.b)} = 0`
+    : (Math.abs(W.w1) < 1e-9 && Math.abs(W.w2) < 1e-9) ? `w₁ = w₂ = 0: no hay recta, todos los puntos reciben ŷ = ${escalon(W.b)}`
+    : `La recta ${fmt(W.w1)}·x₁ + ${par(W.w2)}·x₂ + ${par(W.b)} = 0 queda fuera de la vista${donde}: todos los puntos reciben ŷ = ${clase}`;
 }
 
 function dibujarCalculo() {
