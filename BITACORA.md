@@ -1,6 +1,6 @@
 # Bitácora de Web Personal
 
-Contexto operativo para continuar sin buscar conversaciones anteriores. Actualizar con cada entrega. Fechas en hora de Colombia (America/Bogota). Entrega actual: **1.1.2 · 22 de noviembre de 2026**.
+Contexto operativo para continuar sin buscar conversaciones anteriores. Actualizar con cada entrega. Fechas en hora de Colombia (America/Bogota). Entrega actual: **1.2.0 · 22 de noviembre de 2026**.
 
 ## Identificación
 
@@ -14,6 +14,7 @@ Contexto operativo para continuar sin buscar conversaciones anteriores. Actualiz
 | Alojamiento | GitHub Pages, archivos estáticos en la raíz |
 | Recursos | https://orlmaldonado.github.io/web/recursos.html |
 | Simulador | https://orlmaldonado.github.io/web/animaciones/perceptron_simple.html |
+| Simulador multicapa | https://orlmaldonado.github.io/web/animaciones/perceptron_multicapa.html |
 | Historial | https://github.com/orlmaldonado/web/commits/main/ |
 | Despliegues | https://github.com/orlmaldonado/web/actions |
 
@@ -31,10 +32,26 @@ Los números de versión son etiquetas documentales, no tags Git. Fechas e ident
 | 1.1 | 22 nov. 2026 | Recursos, perceptrón y documentación de continuidad | [606dd01](https://github.com/orlmaldonado/web/commit/606dd01f39d64e68868a99e731fbe9de16d61f5b) |
 | 1.1.1 | 22 nov. 2026 | Tabla compacta de Recursos, actualización de caché CSS y coordenadas del cuadrado unitario | [fb4a788](https://github.com/orlmaldonado/web/commit/fb4a7881d0d09e97c2b082853aa3a5ecbe7f5ff8) |
 | 1.1.2 | 22 nov. 2026 | Aviso de frontera fuera de vista y explicación de su posición y salida uniforme | [1827126](https://github.com/orlmaldonado/web/commit/1827126e8740e3f8b4b489659eb8696b96bd922f) |
+| 1.2.0 | 22 nov. 2026 | Segundo recurso: perceptrón multicapa con retropropagación y gráficas del error | Consultar estado local e historial de `main` |
 
 Base anterior a 1.1: `c1e7a0efa7af5d70df08d8c9f6424a22e23b1279`. Árbol Git: `4f5acdaf6f574a0dd2a0e2ca421625994aced6b0`.
 
 Para restaurar una versión, consultar sus archivos y crear un nuevo commit sobre la cabeza vigente. Evitar restablecimientos forzados: Git conserva las versiones publicadas.
+
+## Entrega 1.2.0: perceptrón multicapa
+
+- El usuario incorporó `animaciones/perceptron_multicapa.html` y autorizó adaptarlo al formato del sitio y publicarlo como otro recurso, junto al perceptrón simple.
+- Se conserva una copia del archivo original en `codigo_claude/animaciones/perceptron_multicapa_original.html`, excluida de la publicación.
+- Se aplican colores azul marino/arena, DM Sans, bordes dorados y navegación compacta a Inicio, Recursos y al perceptrón simple. La página incluye metadescripción y nombres accesibles para sus gráficas.
+- Se reutiliza `perceptron.css?v=1.1.1` y se añade `perceptron_multicapa.css?v=1.2.0`. No se modificó la hoja compartida ni el simulador simple.
+- Se preserva la cuadrícula original de tres columnas: frontera de decisión y error medio a la izquierda; red y función de error al centro; cálculo de fase y tabla a la derecha. Bajo 1000 px de ancho o 600 px de alto, se apilan los paneles como en la fuente original.
+- Configuración: 1–3 capas ocultas, 1–8 neuronas por capa, activaciones sigmoide/tanh/ReLU, salida sigmoide, ECM o entropía cruzada, entrenamiento por muestra o lote completo, tasa de aprendizaje y semilla configurables.
+- Datos: AND, OR, XOR, XOR con ruido, nubes, círculos, lunas, espiral, puntos manuales y CSV. Las visualizaciones incluyen curvas de nivel, superficie 3D, corte de un peso y dirección del gradiente.
+- Se mantuvo intacto el núcleo de aprendizaje y configuración, comprobado contra la copia original. Los atajos ahora respetan campos, botones, enlaces y combinaciones con modificadores. Los lienzos se redibujan al terminar de cargar las fuentes para ajustarse a la maquetación final.
+- `recursos.html` añade una segunda fila a la tabla compacta, con descripción y enlace al nuevo simulador. No se añadieron ilustraciones al catálogo.
+- Pruebas del código real en Node: gradientes analíticos contrastados con diferencias finitas para ECM/entropía cruzada, redes con una y dos capas; avance por fase y muestra; actualización por lote equivalente al gradiente medio; lectura CSV y enlaces locales.
+- Con la configuración predeterminada (XOR, una capa de 2 neuronas sigmoides, ECM, muestra a muestra, semilla 8 y tasa 0.5), se alcanzó error medio 0.00099962 en 2401 épocas, clasificando las entradas como `[0,1,1,0]`.
+- El commit publicado, el despliegue de Pages y la comprobación visual final se registran al terminar en `ESTADO_PUBLICACION.local.json`.
 
 ## Corrección de 1.1.2: recta fuera de vista
 
@@ -87,6 +104,8 @@ Para restaurar una versión, consultar sus archivos y crear un nuevo commit sobr
 | `assets/jose-orlando-maldonado.jpg` | Retrato aprobado |
 | `animaciones/perceptron_simple.html` | Estructura, estilos base y JavaScript del simulador |
 | `animaciones/perceptron.css` | Adaptación visual cargada después del estilo base |
+| `animaciones/perceptron_multicapa.html` | Segundo simulador: red configurable, retropropagación y gráficas del error |
+| `animaciones/perceptron_multicapa.css` | Ajustes compactos del multicapa, sobre los estilos compartidos |
 | `.nojekyll` | Publicación sin procesamiento Jekyll |
 | `README.md`, `BITACORA.md`, `AGENTS.md` | Documentación y continuidad |
 | `ESTADO_PUBLICACION.local.json` | Estado de la última publicación, solo local |
@@ -161,4 +180,4 @@ Para revisar localmente basta abrir `recursos.html`. Un intento de servidor en `
 
 ## Pendientes de contenido
 
-Se incorporarán recursos progresivamente. Quedan por desarrollar materiales de clase, enlaces verificados a producción académica y primeras entradas del blog. No se ha acordado un recurso adicional concreto ni otro rediseño del simulador.
+Se incorporarán recursos progresivamente. El catálogo incluye perceptrón simple y multicapa. Quedan por desarrollar materiales de clase, enlaces verificados a producción académica y primeras entradas del blog. No se ha acordado otro recurso adicional concreto ni otro rediseño de los simuladores.

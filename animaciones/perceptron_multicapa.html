@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Simulador del perceptrón multicapa: explora la propagación hacia adelante, la retropropagación y el descenso del gradiente. Recurso de José Orlando Maldonado Bautista.">
+<title>Perceptrón multicapa: retropropagación paso a paso</title>
+<style>
+:root{--bg:#f7f6f2;--card:#fff;--text:#1f1e1c;--muted:#6b6a64;--faint:#9a988f;--border:#e2e0d8;--strong:#c9c6bb;--soft:#f1efe8;--teal:#1D9E75;--coral:#D85A30;--accent:#185FA5;--accent-bg:#E6F1FB;--danger:#A32D2D;--ok:#0F6E56;--fwd:#378ADD;--bwd:#A32D2D;--upd:#BA7517;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,sans-serif}
+body.pres{font-size:18px}
+main{display:flex;flex-direction:column;height:100vh;padding:8px 14px 10px;gap:8px}
+.top{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.top h1{font-size:1.1em;font-weight:600;margin:0 6px 0 0}
+.sep{width:1px;height:22px;background:var(--border)}
+.app{flex:1;min-height:0;display:grid;grid-template-columns:minmax(260px,26%) minmax(0,1fr) minmax(320px,32%);gap:8px}
+.col{display:flex;flex-direction:column;gap:8px;min-height:0;min-width:0}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 12px;min-width:0;min-height:0;display:flex;flex-direction:column}
+.g1{flex:1}.g2{flex:2}.g3{flex:3}
+.card h3{font-size:.8em;font-weight:600;margin:0 0 4px;color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+canvas{flex:1;min-height:0;width:100%;display:block}
+#cS{cursor:crosshair;touch-action:none}
+#cS.rot{cursor:grab}
+button{font:inherit;font-size:.88em;padding:4px 11px;border-radius:7px;border:1px solid var(--strong);background:var(--card);color:var(--text);cursor:pointer}
+button:hover{background:var(--soft)}
+button.on{background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}
+select,input[type=number]{font:inherit;font-size:.85em;padding:3px 4px;border:1px solid var(--strong);border-radius:6px;background:var(--card);color:var(--text)}
+input[type=number]{width:5em;font-family:var(--mono)}
+label.f{display:flex;align-items:center;gap:5px;font-size:.82em;color:var(--muted)}
+details.ini{position:relative;font-size:.88em}
+details.ini summary{cursor:pointer;color:var(--muted);padding:4px 10px;border:1px solid var(--strong);border-radius:7px;list-style:none;background:var(--card)}
+.pop{position:absolute;z-index:10;top:120%;left:0;width:340px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;box-shadow:0 6px 20px rgba(0,0,0,.1)}
+.pop textarea{width:100%;font-family:var(--mono);font-size:.85em;border:1px solid var(--strong);border-radius:6px;padding:6px;margin-bottom:6px;resize:vertical}
+#cB.clic{cursor:crosshair}
+#capas{display:flex;gap:8px;flex-wrap:wrap}
+#capas span{display:flex;align-items:center;gap:4px;font-size:.82em;color:var(--muted)}
+.calc{font-family:var(--mono);font-size:.82em;line-height:1.6;background:var(--soft);border-radius:8px;padding:6px 10px;overflow:auto;white-space:nowrap;flex:1;min-height:0}
+.m{color:var(--muted)}
+.tw{flex:1;min-height:0;overflow:auto;border:1px solid var(--border);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-family:var(--mono);font-size:.8em}
+th{position:sticky;top:0;background:var(--soft);font-weight:500;color:var(--muted);text-align:right;padding:4px 7px;border-bottom:1px solid var(--strong);z-index:1}
+td{text-align:right;padding:2px 7px;border-bottom:1px solid var(--border)}
+td:first-child,th:first-child{text-align:left}
+tr.sel td{background:var(--accent-bg)}
+tr.act td{background:#FAEEDA}
+tr.sub td{background:var(--soft);color:var(--muted);font-family:system-ui,sans-serif;font-size:.95em;text-align:left}
+td.chg{color:var(--upd);font-weight:600}
+td.neg{color:var(--danger)}
+#status{font-weight:400;margin-left:auto;color:var(--muted)}
+.leg{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:.75em;color:var(--muted);margin-top:2px}
+.sw{display:inline-block;width:14px;height:3px;vertical-align:3px;margin-right:3px;border-radius:2px}
+svg#net{flex:1;min-height:0;width:100%}
+.ov{fill:none;stroke-linecap:round;pointer-events:none}
+.fwd{stroke:var(--fwd);stroke-dasharray:7 7;animation:flujo .7s linear infinite}
+.bwd{stroke:var(--bwd);stroke-dasharray:7 7;animation:reflujo .7s linear infinite}
+.upd{stroke:var(--upd);animation:destello 1s ease-out 1 forwards}
+@keyframes flujo{to{stroke-dashoffset:-14}}
+@keyframes reflujo{to{stroke-dashoffset:14}}
+@keyframes destello{0%{opacity:1}100%{opacity:0}}
+.edge{cursor:pointer}
+@media (max-width:1000px),(max-height:600px){main{height:auto}.app{grid-template-columns:1fr}.card{min-height:300px}}
+</style>
+<link rel="stylesheet" href="perceptron.css?v=1.1.1">
+<link rel="stylesheet" href="perceptron_multicapa.css?v=1.2.0">
+</head>
+<body class="multicapa">
+<main>
+<div class="sim-context">
+  <nav aria-label="Ruta de navegación"><a class="sim-author" href="../index.html">José Orlando Maldonado</a><span aria-hidden="true">/</span><a href="../recursos.html">Recursos</a><span aria-hidden="true">/</span><span aria-current="page">Perceptrón multicapa</span></nav>
+  <a href="perceptron_simple.html">Perceptrón simple</a>
+</div>
+<header class="top">
+  <h1>Perceptrón multicapa</h1>
+  <label class="f">datos <select id="sData">
+    <option value="and">AND (4 puntos)</option><option value="or">OR (4 puntos)</option><option value="xor" selected>XOR (4 puntos)</option><option value="xorr">XOR con ruido</option>
+    <option value="nubes">Dos nubes</option><option value="circ">Círculos</option><option value="lunas">Lunas</option><option value="esp">Espiral</option>
+    <option value="manual">Mis puntos (con clics)</option><option value="csv">Pegar CSV</option></select></label>
+  <span id="xManual" class="top" style="gap:4px" hidden><span class="m" style="font-size:.82em">clic agrega</span><button data-c="1" class="on">clase 1</button><button data-c="0">clase 0</button><button id="bBorrar">Borrar puntos</button></span>
+  <details id="csvBox" class="ini" hidden><summary>Datos CSV ▾</summary><div class="pop">
+    <div class="m" style="font-size:.85em;margin-bottom:4px">Una fila por punto: x1, x2, clase (dos clases). Acepta coma, punto y coma o tabulador, con o sin encabezado.</div>
+    <textarea id="taCSV" rows="9" spellcheck="false">x1,x2,clase
+0.2,0.1,0
+0.4,0.3,0
+0.1,0.5,0
+0.6,0.2,0
+0.3,0.7,0
+1.6,1.4,1
+1.2,1.8,1
+1.9,1.1,1
+1.5,1.9,1
+1.1,1.3,1
+0.9,0.2,1
+0.2,1.0,1</textarea>
+    <label class="f"><input type="checkbox" id="cEst" checked> estandarizar (media 0, desviación 1)</label>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:6px"><button id="bCSV">Cargar datos</button><span id="csvMsg" style="font-size:.82em"></span></div>
+  </div></details>
+  <label class="f">capas ocultas <select id="sNC"><option>1</option><option>2</option><option>3</option></select></label>
+  <div id="capas"></div>
+  <div class="sep"></div>
+  <label class="f">error <select id="sLoss"><option value="ecm">ECM: ½(ŷ − t)²</option><option value="ce">Entropía cruzada</option></select></label>
+  <label class="f">modo <select id="sModo"><option value="sgd">Muestra a muestra</option><option value="lote">Lote completo</option></select></label>
+  <label class="f">η <input id="iEta" type="number" step="0.1" min="0.01" value="0.5"></label>
+  <label class="f">semilla <input id="iSeed" type="number" step="1" value="8"></label>
+</header>
+<header class="top">
+  <button id="bFase" title="Espacio">Fase</button>
+  <button id="bIt" title="I">Iteración</button>
+  <button id="bEp" title="E">Época</button>
+  <button id="bTrain" title="P">Entrenar</button>
+  <button id="bReset" title="R">Reiniciar</button>
+  <label class="f">velocidad <select id="sVel"><option value="1">1 época/cuadro</option><option value="5" selected>5</option><option value="20">20</option><option value="100">100</option></select></label>
+  <div class="leg" style="margin-left:6px"><span><span class="sw" style="background:var(--fwd)"></span>hacia adelante</span><span><span class="sw" style="background:var(--bwd)"></span>retropropagación (δ)</span><span><span class="sw" style="background:var(--upd)"></span>actualización</span><span><span class="sw" style="background:var(--teal)"></span>peso +</span><span><span class="sw" style="background:var(--coral)"></span>peso −</span></div>
+  <button id="bPres" style="margin-left:auto">Presentación</button>
+</header>
+<div class="app">
+  <div class="col">
+    <div class="card g3"><h3>Frontera de decisión <span class="m" style="font-weight:400">(color = salida ŷ)</span></h3><canvas id="cB" role="img" aria-label="Plano de clasificación con las muestras y la frontera de decisión"></canvas></div>
+    <div class="card g2"><h3>Error medio por época</h3><canvas id="cL" role="img" aria-label="Evolución del error medio durante el entrenamiento"></canvas></div>
+  </div>
+  <div class="col">
+    <div class="card g2"><h3>La red <span class="m" style="font-weight:400">· <span style="background:#378ADD;color:#fff;border-radius:3px;padding:0 4px">x</span> <span style="background:#7F77DD;color:#fff;border-radius:3px;padding:0 4px">y</span> pesos de la gráfica del error (clic en otra conexión para cambiarlos)</span></h3><svg id="net" role="img" aria-label="Red neuronal multicapa con sus pesos, activaciones y gradientes" viewBox="0 0 640 290"></svg></div>
+    <div class="card g3"><h3>Función de error <select id="sVista"><option value="cont">dos pesos: curvas de nivel</option><option value="3d">dos pesos: 3D</option><option value="peso">un peso</option><option value="dir">dirección del gradiente</option></select>
+      <label class="f" id="lblA"><span id="txA">eje x</span> <select id="sA"></select></label><label class="f" id="lblB">eje y <select id="sB"></select></label>
+      <label class="f" id="lblF"><input type="checkbox" id="cFreeze"> <span id="txF">entrenar solo estos dos</span></label></h3>
+      <canvas id="cS" role="img" aria-label="Función de error y trayectoria del descenso del gradiente"></canvas>
+      <div class="leg"><span id="sLeg"></span><span id="sliceNote"></span></div>
+    </div>
+  </div>
+  <div class="col">
+    <div class="card g2"><h3>Cálculo de la fase actual <span id="status"></span></h3><div class="calc" id="calc"></div></div>
+    <div class="card g3"><h3>Prueba de escritorio de la muestra actual</h3>
+      <div class="tw" id="tw"><table id="tab"></table></div></div>
+  </div>
+</div>
+</main>
+<script>
+/* ===================== utilidades ===================== */
+const $ = id => document.getElementById(id);
+const fmt = (v, d = 2) => { if (!isFinite(v)) return '—'; const r = Math.abs(v) < 0.5 * Math.pow(10, -d) ? 0 : v; return r.toFixed(d).replace('-', '−'); };
+const par = (v, d) => v < 0 ? '(' + fmt(v, d) + ')' : fmt(v, d);
+function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function normal(r) { return Math.sqrt(-2 * Math.log(r() + 1e-12)) * Math.cos(2 * Math.PI * r()); }
+
+/* ===================== funciones de activación ===================== */
+const ACT = {
+  sigmoide: { f: z => 1 / (1 + Math.exp(-z)), d: (z, a) => a * (1 - a), s: 'σ', ds: a => `${fmt(a)}·(1 − ${fmt(a)})` },
+  tanh:     { f: z => Math.tanh(z),            d: (z, a) => 1 - a * a,   s: 'tanh', ds: a => `(1 − ${fmt(a)}²)` },
+  relu:     { f: z => Math.max(0, z),          d: (z, a) => z > 0 ? 1 : 0, s: 'ReLU', ds: (a, z) => z > 0 ? '1' : '0' }
+};
+
+/* ===================== datos ===================== */
+function generarDatos(tipo) {
+  const r = rng(7), X = [], T = [];
+  const add = (x, y, t) => { X.push([x, y]); T.push(t); };
+  if (tipo === 'manual') return propios;
+  if (tipo === 'csv') return csvDatos;
+  if (tipo === 'and') { [[0,0,0],[0,1,0],[1,0,0],[1,1,1]].forEach(p => add(...p)); return { X, T }; }
+  if (tipo === 'or') { [[0,0,0],[0,1,1],[1,0,1],[1,1,1]].forEach(p => add(...p)); return { X, T }; }
+  if (tipo === 'xor') { [[0,0,0],[0,1,1],[1,0,1],[1,1,0]].forEach(p => add(...p)); }
+  if (tipo === 'xorr') { [[0,0,0],[0,1,1],[1,0,1],[1,1,0]].forEach(([a,b,t]) => { for (let k = 0; k < 20; k++) add(a + 0.15*normal(r), b + 0.15*normal(r), t); }); }
+  if (tipo === 'circ') { for (let k = 0; k < 50; k++) { const th = 2*Math.PI*r(), q = 0.45*r(); add(q*Math.cos(th), q*Math.sin(th), 1); }
+                         for (let k = 0; k < 50; k++) { const th = 2*Math.PI*r(), q = 0.8 + 0.35*r(); add(q*Math.cos(th), q*Math.sin(th), 0); } }
+  if (tipo === 'lunas') { for (let k = 0; k < 50; k++) { const th = Math.PI*r(); add(Math.cos(th) + 0.1*normal(r), Math.sin(th) + 0.1*normal(r), 0); }
+                          for (let k = 0; k < 50; k++) { const th = Math.PI*r(); add(1 - Math.cos(th) + 0.1*normal(r), 0.5 - Math.sin(th) + 0.1*normal(r), 1); } }
+  if (tipo === 'nubes') { for (let k = 0; k < 50; k++) add(-0.6 + 0.4*normal(r), -0.6 + 0.4*normal(r), 0);
+                          for (let k = 0; k < 50; k++) add(0.6 + 0.4*normal(r), 0.6 + 0.4*normal(r), 1); }
+  if (tipo === 'esp') { for (let c = 0; c < 2; c++) for (let k = 0; k < 50; k++) { const q = 0.1 + k/50, th = 3*Math.PI*k/50 + c*Math.PI; add(q*Math.cos(th) + 0.04*normal(r), q*Math.sin(th) + 0.04*normal(r), c); } }
+  if (tipo !== 'xor') { const idx = X.map((_, i) => i); for (let i = idx.length - 1; i > 0; i--) { const j = Math.floor(r()*(i+1)); [idx[i], idx[j]] = [idx[j], idx[i]]; }
+    return { X: idx.map(i => X[i]), T: idx.map(i => T[i]) }; }
+  return { X, T };
+}
+
+/* ===================== la red ===================== */
+let net, data, P = [], st, cfg, propios = { X: [], T: [] }, csvDatos = { X: [], T: [] }, claseClic = 1, fr = null;
+function nombre(l, j) {
+  if (l === 0) return 'x' + (j + 1);
+  if (l === net.F) return 'ŷ';
+  return net.F > 2 ? `h${l}.${j + 1}` : 'h' + (j + 1);
+}
+function crearRed() {
+  const sizes = [2, ...cfg.capas.map(c => c.n), 1], acts = [null, ...cfg.capas.map(c => c.act), 'sigmoide'];
+  const r = rng(cfg.seed), W = [], B = [];
+  for (let l = 0; l < sizes.length - 1; l++) { W.push([]); B.push([]);
+    for (let j = 0; j < sizes[l + 1]; j++) { W[l].push([]); for (let i = 0; i < sizes[l]; i++) W[l][j].push(r()*2 - 1); B[l].push(r()*2 - 1); } }
+  net = { sizes, acts, W, B, F: sizes.length - 1 };
+  P = [];
+  for (let l = 0; l < net.F; l++) for (let j = 0; j < sizes[l + 1]; j++) {
+    for (let i = 0; i < sizes[l]; i++) P.push({ l, j, i, n: `${nombre(l, i)}→${nombre(l + 1, j)}` });
+    P.push({ l, j, i: -1, n: `b ${nombre(l + 1, j)}` });
+  }
+}
+const getP = p => p.i < 0 ? net.B[p.l][p.j] : net.W[p.l][p.j][p.i];
+const setP = (p, v) => { if (p.i < 0) net.B[p.l][p.j] = v; else net.W[p.l][p.j][p.i] = v; };
+const gradP = (g, p) => p.i < 0 ? g.gB[p.l][p.j] : g.gW[p.l][p.j][p.i];
+
+function adelante(x) {
+  const a = [x.slice()], z = [null];
+  for (let l = 0; l < net.F; l++) {
+    const f = ACT[net.acts[l + 1]].f, zl = [], al = [];
+    for (let j = 0; j < net.sizes[l + 1]; j++) { let s = net.B[l][j]; for (let i = 0; i < net.sizes[l]; i++) s += net.W[l][j][i] * a[l][i]; zl.push(s); al.push(f(s)); }
+    z.push(zl); a.push(al);
+  }
+  return { a, z };
+}
+function perdida(y, t) {
+  if (cfg.loss === 'ecm') return 0.5 * (y - t) * (y - t);
+  const q = Math.min(Math.max(y, 1e-7), 1 - 1e-7); return -(t * Math.log(q) + (1 - t) * Math.log(1 - q));
+}
+function atras(c, t) {
+  const F = net.F, y = c.a[F][0], d = [];
+  d[F] = [cfg.loss === 'ecm' ? (y - t) * y * (1 - y) : (y - t)];
+  for (let l = F - 1; l >= 1; l--) { d[l] = [];
+    for (let i = 0; i < net.sizes[l]; i++) { let s = 0; for (let j = 0; j < net.sizes[l + 1]; j++) s += net.W[l][j][i] * d[l + 1][j];
+      d[l].push(s * ACT[net.acts[l]].d(c.z[l][i], c.a[l][i])); } }
+  const gW = [], gB = [];
+  for (let l = 0; l < F; l++) { gW.push([]); gB.push([]);
+    for (let j = 0; j < net.sizes[l + 1]; j++) { gW[l].push(c.a[l].map(ai => d[l + 1][j] * ai)); gB[l].push(d[l + 1][j]); } }
+  return { d, gW, gB };
+}
+function errorMedio() { let s = 0; for (let k = 0; k < data.X.length; k++) s += perdida(adelante(data.X[k]).a[net.F][0], data.T[k]); return s / data.X.length; }
+function gradMedio() {
+  const g = P.map(() => 0);
+  for (let k = 0; k < data.X.length; k++) { const c = adelante(data.X[k]), b = atras(c, data.T[k]); P.forEach((p, n) => g[n] += gradP(b, p)); }
+  return g.map(v => v / data.X.length);
+}
+
+/* ===================== estado del algoritmo ===================== */
+function fases(idx) {
+  const s = []; for (let l = 0; l < net.F; l++) s.push('f' + l); s.push('e');
+  for (let l = net.F - 1; l >= 0; l--) s.push('b' + l);
+  const pequena = net.sizes.slice(1).reduce((a, b) => a + b, 0) <= 8, upd = [];
+  for (let l = net.F - 1; l >= 0; l--) { if (pequena) for (let j = 0; j < net.sizes[l + 1]; j++) upd.push(`u${l}.${j}`); else upd.push('u' + l); }
+  const util = u => !cfg.freeze || congelados().some(n => esDe(P[n], u));
+  if (cfg.modo === 'sgd') s.push(...upd.filter(util)); else { s.push('a'); if (idx === data.X.length - 1) s.push(...upd.filter(util)); }
+  return s;
+}
+function leeU(u) { const [l, j] = u.slice(1).split('.'); return { l: +l, j: j === undefined ? undefined : +j }; }
+function esDe(p, u) { const { l, j } = leeU(u); return p.l === l && (j === undefined || p.j === j); }
+function reiniciar() {
+  parar(); leerCfg(); data = generarDatos(cfg.datos); crearRed(); llenarEjes(); nuevoEstado();
+}
+function nuevoEstado() {
+  const N = data.X.length;
+  st = { ep: 1, idx: 0, c: null, k: -1, seq: [], done: true, acc: null, antes: P.map(getP), despues: null, gUsado: null, upd: null, epL: N ? [errorMedio()] : [], tray: [], fin: N ? '' : (cfg.datos === 'csv' ? 'Pega los datos y pulsa «Cargar datos».' : 'Haz clic en el plano para agregar puntos.') };
+  st.tray.push([getP(P[ejeA]), getP(P[ejeB])]);
+  slice.key = ''; dibujar(true);
+}
+const hayDatos = () => { if (data.X.length) return true; st.fin = cfg.datos === 'csv' ? 'Primero carga los datos CSV.' : 'Primero agrega puntos con clic en el plano.'; return false; };
+function iniciarMuestra() {
+  const x = data.X[st.idx], t = data.T[st.idx], c = adelante(x);
+  Object.assign(c, atras(c, t), { x, t, idx: st.idx, L: perdida(c.a[net.F][0], t) });
+  if (cfg.modo === 'sgd' || st.idx === 0) { st.antes = P.map(getP); st.despues = null; st.gUsado = null; st.upd = null; if (cfg.modo === 'lote') st.acc = P.map(() => 0); }
+  st.c = c; st.seq = fases(st.idx); st.k = -1; st.done = false;
+}
+function fase() {
+  if (st.done) iniciarMuestra();
+  st.k++; const ph = st.seq[st.k], c = st.c;
+  if (ph === 'a') P.forEach((p, n) => st.acc[n] += gradP(c, p));
+  if (ph[0] === 'u') {
+    if (!st.upd) {
+      const g = cfg.modo === 'sgd' ? P.map(p => gradP(c, p)) : st.acc.map(v => v / data.X.length);
+      const libres = cfg.freeze ? congelados() : P.map((_, n) => n);
+      st.gUsado = P.map((_, n) => libres.includes(n) ? g[n] : 0); st.upd = P.map(() => false);
+    }
+    P.forEach((p, n) => { if (esDe(p, ph)) { setP(p, st.antes[n] - cfg.eta * st.gUsado[n]); st.upd[n] = true; } });
+    st.despues = P.map(getP);
+    if (st.k === st.seq.length - 1) { st.tray.push([getP(P[ejeA]), getP(P[ejeB])]); if (st.tray.length > 4000) st.tray.shift(); }
+  }
+  if (st.k === st.seq.length - 1) {
+    st.done = true; st.idx++;
+    if (st.idx >= data.X.length) { st.idx = 0; st.ep++; st.epL.push(errorMedio()); }
+  }
+  return ph;
+}
+function iteracion() { if (!hayDatos()) return; do { fase(); } while (!st.done); }
+function epoca() { if (!hayDatos()) return; const e = st.ep; do { fase(); } while (!(st.done && st.ep > e)); }
+
+let timer = null;
+function parar() { if (timer) { cancelAnimationFrame(timer); timer = null; } $('bTrain').textContent = 'Entrenar'; }
+function entrenar() {
+  if (timer) { parar(); dibujar(true); return; }
+  $('bTrain').textContent = 'Pausa';
+  const loop = () => {
+    const n = +$('sVel').value;
+    for (let k = 0; k < n; k++) { epoca(); const L = st.epL[st.epL.length - 1];
+      if (L < 0.001 || st.ep > 50000 || !isFinite(L)) { st.fin = isFinite(L) && L < 0.001 ? `Error medio < 0.001 en la época ${st.ep - 1}` : 'Entrenamiento detenido'; parar(); dibujar(true); return; } }
+    dibujar(false); timer = requestAnimationFrame(loop);
+  };
+  timer = requestAnimationFrame(loop);
+}
+
+/* ===================== configuración ===================== */
+function construirCapas() {
+  const n = +$('sNC').value, prev = [...document.querySelectorAll('#capas span')].map(s => ({ n: s.querySelector('input').value, a: s.querySelector('select').value }));
+  $('capas').innerHTML = '';
+  for (let k = 0; k < n; k++) {
+    const v = prev[k] || { n: 2, a: 'sigmoide' }, sp = document.createElement('span');
+    sp.title = 'neuronas y activación de la capa oculta ' + (k + 1); sp.innerHTML = `capa ${k + 1} <input type="number" min="1" max="8" step="1" value="${v.n}" style="width:3.6em"> <select><option value="sigmoide">sigmoide</option><option value="tanh">tanh</option><option value="relu">ReLU</option></select>`;
+    sp.querySelector('select').value = v.a; $('capas').appendChild(sp);
+    sp.querySelector('input').onchange = reiniciar; sp.querySelector('select').onchange = reiniciar;
+  }
+}
+function leerCfg() {
+  cfg = { datos: $('sData').value, loss: $('sLoss').value, modo: $('sModo').value, eta: Math.max(0.001, +$('iEta').value || 0.5), seed: Math.round(+$('iSeed').value) || 1,
+          freeze: $('cFreeze').checked,
+          capas: [...document.querySelectorAll('#capas span')].map(s => ({ n: Math.min(8, Math.max(1, Math.round(+s.querySelector('input').value) || 1)), act: s.querySelector('select').value })) };
+}
+let ejeA = 0, ejeB = 1, clicEje = 0;
+function congelados() { return $('sVista').value === 'peso' ? [ejeA] : [ejeA, ejeB]; }
+function ajustarControles(v) {
+  $('lblA').hidden = v === 'dir'; $('lblB').hidden = v === 'dir' || v === 'peso'; $('lblF').hidden = v === 'dir';
+  $('txA').textContent = v === 'peso' ? 'peso' : 'eje x';
+  $('txF').textContent = v === 'peso' ? 'entrenar solo este peso' : 'entrenar solo estos dos';
+}
+function llenarEjes() {
+  if (ejeA >= P.length) ejeA = 0; if (ejeB >= P.length || ejeB === ejeA) ejeB = ejeA === 1 ? 0 : 1;
+  const opts = P.map((p, n) => `<option value="${n}">${p.n}</option>`).join('');
+  $('sA').innerHTML = opts; $('sB').innerHTML = opts; $('sA').value = ejeA; $('sB').value = ejeB;
+}
+function cambiarEjes(a, b) {
+  if (a === b) return; ejeA = a; ejeB = b; $('sA').value = a; $('sB').value = b;
+  st.tray = [[getP(P[ejeA]), getP(P[ejeB])]]; slice.key = ''; dibujar(true);
+}
+
+/* ===================== dibujo: red ===================== */
+function posiciones() {
+  const pos = [], F = net.F, maxN = Math.max(...net.sizes);
+  for (let l = 0; l <= F; l++) { const n = net.sizes[l], sp = Math.min(130, 200 / Math.max(n - 1, 1)); pos.push([]);
+    for (let j = 0; j < n; j++) pos[l].push([70 + l * (440 / F), 165 + (j - (n - 1) / 2) * sp]); }
+  return { pos, r: maxN > 5 ? 12 : 17, yb: 22 };
+}
+function hechas() {
+  const h = { f: -1, b: net.F, e: false, u: false, a: false };
+  if (!st.c) return h;
+  for (let k = 0; k <= st.k; k++) { const ph = st.seq[k];
+    if (ph[0] === 'f') h.f = +ph.slice(1); else if (ph === 'e') h.e = true; else if (ph[0] === 'b') h.b = +ph.slice(1); else if (ph[0] === 'u') h.u = true; else if (ph === 'a') h.a = true; }
+  return h;
+}
+function dibujarRed(anim) {
+  const { pos, r, yb } = posiciones(), H = hechas(), ph = st.c ? st.seq[st.k] : null, c = st.c;
+  const etiquetas = P.length <= 18, valores = Math.max(...net.sizes) <= 3;
+  let base = '', ov = '', nodos = '', lab = '';
+  P.forEach((p, n) => {
+    const [x1, y1] = p.i < 0 ? [pos[p.l][0][0], yb] : pos[p.l][p.i], [x2, y2] = pos[p.l + 1][p.j], w = getP(p);
+    const vS = $('sVista').value, marcaA = n === ejeA && vS !== 'dir', marcaB = n === ejeB && (vS === 'cont' || vS === '3d');
+    if (marcaA || marcaB) {
+      const c = marcaA ? '#378ADD' : '#7F77DD', tx = x1 + 0.5 * (x2 - x1), ty = y1 + 0.5 * (y2 - y1);
+      base += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-opacity=".28" stroke-width="12" stroke-linecap="round"/>`;
+      lab += `<g><rect x="${tx - 9}" y="${ty - 8}" width="18" height="15" rx="4" fill="${c}"/><text x="${tx}" y="${ty + 3.5}" text-anchor="middle" font-size="10.5" fill="#fff">${vS === 'peso' ? 'w' : marcaA ? 'x' : 'y'}</text></g>`;
+    }
+    base += `<line class="edge" data-n="${n}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${w >= 0 ? '#1D9E75' : '#D85A30'}" stroke-width="${(0.8 + 3.2 * Math.min(Math.abs(w), 3) / 3).toFixed(2)}"/>`;
+    base += `<line class="edge" data-n="${n}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="transparent" stroke-width="12"/>`;
+    if (anim && ph) {
+      if (ph === 'f' + p.l) ov += `<line class="ov fwd" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke-width="3"/>`;
+      if (ph === 'b' + p.l) ov += `<line class="ov bwd" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke-width="3"/>`;
+      if (ph[0] === 'u' && esDe(p, ph) && st.gUsado && st.gUsado[n] !== 0) ov += `<line class="ov upd" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke-width="7"/>`;
+    }
+    if (etiquetas) { const fr = p.i < 0 ? 0.6 : 0.3, lx = x1 + fr * (x2 - x1), ly = y1 + fr * (y2 - y1) - 5;
+      lab += `<text x="${lx}" y="${ly}" text-anchor="middle" font-size="11" font-family="var(--mono)" fill="#1f1e1c" paint-order="stroke" stroke="#fff" stroke-width="4">${fmt(w)}</text>`; }
+  });
+  const activo = (l, j) => { if (!anim || !ph) return null;
+    if (ph[0] === 'f' && +ph.slice(1) === l - 1) return ['#378ADD', '#E6F1FB'];
+    if (ph === 'e' && l === net.F) return ['#A32D2D', '#FCEBEB'];
+    if (ph[0] === 'b' && +ph.slice(1) === l - 1) return ['#A32D2D', '#FCEBEB'];
+    if (ph[0] === 'u') { const u = leeU(ph); if (u.l === l - 1 && (u.j === undefined || u.j === j)) return ['#BA7517', '#FAEEDA']; }
+    return null; };
+  for (let l = 0; l < net.F; l++) { const x = pos[l][0][0];
+    nodos += `<circle cx="${x}" cy="${yb}" r="11" fill="#f1efe8" stroke="#c9c6bb" stroke-width="1.2"/><text x="${x}" y="${yb + 4}" text-anchor="middle" font-size="11" fill="#1f1e1c">1</text>`; }
+  for (let l = 0; l <= net.F; l++) pos[l].forEach(([x, y], j) => {
+    const ac = activo(l, j);
+    if (ac) nodos += `<circle cx="${x}" cy="${y}" r="${r + 7}" fill="none" stroke="${ac[0]}" stroke-opacity=".35" stroke-width="5"/>`;
+    nodos += `<circle cx="${x}" cy="${y}" r="${r}" fill="${ac ? ac[1] : '#fff'}" stroke="${ac ? ac[0] : '#c9c6bb'}" stroke-width="${ac ? 2.5 : 1.2}"/><text x="${x}" y="${y + 4}" text-anchor="middle" font-size="${r > 12 ? 12 : 10}" fill="#1f1e1c">${nombre(l, j)}</text>`;
+    if (l > 0 && valores) nodos += `<text x="${x}" y="${y + r + 11}" text-anchor="middle" font-size="9.5" fill="#9a988f">${ACT[net.acts[l]].s}</text>`;
+    if (!c) return;
+    if (l === 0) nodos += `<text x="${x - r - 6}" y="${y + 4}" text-anchor="end" font-size="12" font-family="var(--mono)" fill="var(--fwd)">${fmt(c.x[j])}</text>`;
+    if (l > 0 && valores && H.f >= l - 1) nodos += `<text x="${x}" y="${y - r - 5}" text-anchor="middle" font-size="11" font-family="var(--mono)" fill="var(--fwd)" paint-order="stroke" stroke="#fff" stroke-width="4">a=${fmt(c.a[l][j])}</text>`;
+    if (l > 0 && valores && H.b <= l - 1) nodos += `<text x="${x}" y="${y + r + 23}" text-anchor="middle" font-size="11" font-family="var(--mono)" fill="var(--bwd)" paint-order="stroke" stroke="#fff" stroke-width="4">δ=${fmt(c.d[l][j], 3)}</text>`;
+    if (l === net.F) nodos += `<text x="${x + r + 8}" y="${y + 4}" font-size="12" font-family="var(--mono)" fill="#6b6a64">t = ${c.t}</text>` +
+                              (H.e ? `<text x="${x + r + 8}" y="${y + 20}" font-size="12" font-family="var(--mono)" fill="var(--bwd)">L = ${fmt(c.L, 3)}</text>` : '');
+  });
+  $('net').innerHTML = base + ov + lab + nodos;
+  $('net').querySelectorAll('.edge').forEach(e => e.onclick = () => { const n = +e.dataset.n;
+    if ($('sVista').value === 'peso') { if (n !== ejeA) cambiarEjes(n, n === ejeB ? ejeA : ejeB); return; }
+    if (n === ejeA || n === ejeB) return; if (clicEje === 0) cambiarEjes(n, ejeB); else cambiarEjes(ejeA, n); clicEje = 1 - clicEje; });
+}
+
+/* ===================== dibujo: lienzos ===================== */
+function lienzo(id) {
+  const cv = $(id), dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
+  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+  return { g, w, h };
+}
+function dibujarFrontera() {
+  const { g, w, h } = lienzo('cB'); if (w < 10 || h < 10) return;
+  const xs = data.X.map(p => p[0]), ys = data.X.map(p => p[1]), fijo = cfg.datos === 'manual' || !xs.length;
+  const cx = fijo ? 0 : (Math.min(...xs) + Math.max(...xs)) / 2, cy = fijo ? 0 : (Math.min(...ys) + Math.max(...ys)) / 2;
+  const span = fijo ? 3.2 : Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) * 1.35 + 0.4;
+  const S = Math.min(w, h) - 8, ox = (w - S) / 2, oy = (h - S) / 2;
+  fr = { cx, cy, span, ox, oy, S };
+  const px = x => ox + (x - cx + span / 2) / span * S, py = y => oy + S - (y - cy + span / 2) / span * S;
+  const N = 60, cell = S / N;
+  for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
+    const x = cx - span / 2 + (i + 0.5) * span / N, y = cy + span / 2 - (j + 0.5) * span / N, v = adelante([x, y]).a[net.F][0];
+    const t = Math.abs(v - 0.5) * 2, col = v >= 0.5 ? [93, 202, 165] : [240, 153, 123];
+    g.fillStyle = `rgb(${[0, 1, 2].map(k => Math.round(255 + (col[k] - 255) * (0.15 + 0.6 * t))).join(',')})`;
+    g.fillRect(ox + i * cell, oy + j * cell, cell + 0.6, cell + 0.6);
+  }
+  g.strokeStyle = 'rgba(0,0,0,.18)'; g.lineWidth = 1;
+  [[0, 0, 1, 0], [0, 0, 0, 1]].forEach(([a, b, c2, d]) => { g.beginPath(); if (a === 0 && c2 === 1) { g.moveTo(ox, py(0)); g.lineTo(ox + S, py(0)); } else { g.moveTo(px(0), oy); g.lineTo(px(0), oy + S); } g.stroke(); });
+  const rad = data.X.length > 10 ? 4.5 : 9;
+  data.X.forEach((p, k) => { g.beginPath(); g.arc(px(p[0]), py(p[1]), rad, 0, 7); g.fillStyle = data.T[k] ? '#1D9E75' : '#D85A30'; g.fill(); g.strokeStyle = '#fff'; g.lineWidth = 1.5; g.stroke(); });
+  if (st.c && !timer) { const p = st.c.x; g.beginPath(); g.arc(px(p[0]), py(p[1]), rad + 5, 0, 7); g.strokeStyle = '#1f1e1c'; g.lineWidth = 2; g.stroke(); }
+  if (!data.X.length) { g.fillStyle = '#6b6a64'; g.font = '13px system-ui'; const t = cfg.datos === 'csv' ? 'Carga datos CSV' : 'Clic: agrega un punto de la clase elegida'; g.fillText(t, ox + S / 2 - g.measureText(t).width / 2, oy + S / 2 - 20); }
+  g.fillStyle = '#6b6a64'; g.font = '12px system-ui'; g.fillText('x₁', ox + S - 16, py(0) - 6 < oy + 12 ? oy + S - 6 : py(0) - 6); g.fillText('x₂', px(0) + 6, oy + 14);
+}
+function dibujarError() {
+  const { g, w, h } = lienzo('cL'); if (w < 10 || h < 10 || !st.epL.length) return;
+  const L = st.epL, m = { l: 44, r: 10, t: 10, b: 22 }, W = w - m.l - m.r, Hh = h - m.t - m.b;
+  const mx = Math.max(...L) * 1.05 || 1, n = Math.max(L.length - 1, 1);
+  g.strokeStyle = '#e2e0d8'; g.lineWidth = 1; g.fillStyle = '#9a988f'; g.font = '11px system-ui';
+  [0, 0.5, 1].forEach(f => { const y = m.t + Hh * (1 - f); g.beginPath(); g.moveTo(m.l, y); g.lineTo(m.l + W, y); g.stroke(); g.fillText(fmt(mx * f, 3), 4, y + 4); });
+  g.fillText('época 0', m.l, h - 6); const e1 = `época ${L.length - 1}`; g.fillText(e1, m.l + W - g.measureText(e1).width, h - 6);
+  g.beginPath(); L.forEach((v, i) => { const x = m.l + W * i / n, y = m.t + Hh * (1 - v / mx); i ? g.lineTo(x, y) : g.moveTo(x, y); });
+  g.strokeStyle = '#A32D2D'; g.lineWidth = 2; g.stroke();
+  g.fillStyle = '#1f1e1c'; g.font = '12px var(--mono), monospace';
+  const ul = L[L.length - 1], txt = `E = ${ul < 0.001 ? ul.toExponential(2) : fmt(ul, 4)}`; g.fillText(txt, m.l + W - g.measureText(txt).width, m.t + 14);
+}
+const slice = { key: '', grid: null, cx: 0, cy: 0, R: 4, t: 0 };
+const LEYENDA = {
+  cont: 'Curvas de nivel: oscuro = menor error. Línea blanca: trayectoria. Flecha naranja: −gradiente. Clic en la superficie para mover el punto.',
+  '3d': 'Arrastra para girar. Bola: pesos actuales. Línea roja: trayectoria.',
+  peso: 'Error al mover solo el peso elegido, con los demás fijos. Roja: tangente (su pendiente es ∂E/∂w). Naranja: el paso Δw = −η·∂E/∂w.',
+  dir: 'Error a lo largo de −∇E, moviendo todos los pesos a la vez. Punteada: dónde cae el paso con η. Verde: el mejor paso en esa dirección.'
+};
+function flecha(g, x1, y1, x2, y2, c) {
+  if (Math.hypot(x2 - x1, y2 - y1) < 3) return; const an = Math.atan2(y2 - y1, x2 - x1);
+  g.strokeStyle = c; g.fillStyle = c; g.lineWidth = 3; g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke();
+  g.beginPath(); g.moveTo(x2 + 3 * Math.cos(an), y2 + 3 * Math.sin(an)); g.lineTo(x2 - 9 * Math.cos(an - 0.45), y2 - 9 * Math.sin(an - 0.45)); g.lineTo(x2 - 9 * Math.cos(an + 0.45), y2 - 9 * Math.sin(an + 0.45)); g.fill();
+}
+function marco(g, w, h, xlo, xhi, ylo, yhi, xl, dy = 3) {
+  const m = { l: 50, r: 12, t: 40, b: 32 }, W = w - m.l - m.r, H = h - m.t - m.b;
+  const px = x => m.l + (x - xlo) / (xhi - xlo) * W, py = y => m.t + (yhi - y) / ((yhi - ylo) || 1) * H;
+  g.strokeStyle = '#e2e0d8'; g.fillStyle = '#9a988f'; g.font = '11px system-ui'; g.lineWidth = 1;
+  for (let k = 0; k <= 4; k++) { const y = ylo + (yhi - ylo) * k / 4; g.beginPath(); g.moveTo(m.l, py(y)); g.lineTo(m.l + W, py(y)); g.stroke(); g.fillText(fmt(y, dy), 4, py(y) + 4); }
+  for (let k = 0; k <= 4; k++) { const x = xlo + (xhi - xlo) * k / 4, t = fmt(x, 2); g.fillText(t, Math.min(Math.max(px(x) - g.measureText(t).width / 2, m.l), m.l + W - g.measureText(t).width), m.t + H + 13); }
+  g.fillStyle = '#6b6a64'; g.font = '12px system-ui'; g.fillText(xl, m.l + W - g.measureText(xl).width, m.t + H + 27);
+  return { px, py, m, W, H };
+}
+function dibujarCorte1() {
+  const { g, w, h } = lienzo('cS'); if (w < 10 || h < 10) return;
+  const p = P[ejeA], v = getP(p);
+  if (slice.k1 !== ejeA || Math.abs(v - slice.c1) > slice.R * 0.85) { slice.c1 = v; slice.k1 = ejeA; }
+  const lo = slice.c1 - slice.R, hi = slice.c1 + slice.R, xs = [], ys = [];
+  for (let k = 0; k <= 120; k++) { const x = lo + (hi - lo) * k / 120; setP(p, x); xs.push(x); ys.push(errorMedio()); }
+  setP(p, v);
+  const E0 = errorMedio(), gm = gradMedio()[ejeA], ymax = Math.max(...ys, E0) * 1.06 + 1e-6, ymin = 0;
+  const { px, py } = marco(g, w, h, lo, hi, ymin, ymax, 'peso ' + p.n);
+  g.beginPath(); xs.forEach((x, k) => k ? g.lineTo(px(x), py(ys[k])) : g.moveTo(px(x), py(ys[k]))); g.strokeStyle = '#185FA5'; g.lineWidth = 2.5; g.stroke();
+  const dw = slice.R * 0.3; g.beginPath(); g.moveTo(px(v - dw), py(E0 - gm * dw)); g.lineTo(px(v + dw), py(E0 + gm * dw)); g.strokeStyle = '#A32D2D'; g.lineWidth = 2; g.stroke();
+  const vn = Math.max(lo, Math.min(hi, v - cfg.eta * gm)); flecha(g, px(v), py(0) - 8, px(vn), py(0) - 8, '#BA7517');
+  g.setLineDash([2, 3]); g.strokeStyle = '#c9c6bb'; g.lineWidth = 1; g.beginPath(); g.moveTo(px(v), py(E0)); g.lineTo(px(v), py(0)); g.stroke(); g.setLineDash([]);
+  g.beginPath(); g.arc(px(v), py(E0), 7, 0, 7); g.fillStyle = '#fff'; g.fill(); g.strokeStyle = '#A32D2D'; g.lineWidth = 3; g.stroke();
+  g.font = '12px var(--mono), monospace'; g.fillStyle = '#1f1e1c'; g.fillText(`${p.n} = ${fmt(v, 3)}   E = ${fmt(E0, 4)}`, 50, 14);
+  g.fillStyle = '#A32D2D'; g.fillText(`∂E/∂w = ${fmt(gm, 4)}`, 50, 30); g.fillStyle = '#BA7517'; g.fillText(`Δw = −${fmt(cfg.eta)}·(${fmt(gm, 4)}) = ${fmt(-cfg.eta * gm, 4)}`, 190, 30);
+}
+function dibujarDir() {
+  const { g, w, h } = lienzo('cS'); if (w < 10 || h < 10) return;
+  const libres = P.map((_, n) => n), gm = gradMedio().map((v, n) => libres.includes(n) ? v : 0), gn = Math.hypot(...gm);
+  g.font = '12px var(--mono), monospace'; g.fillStyle = '#1f1e1c';
+  if (gn < 1e-10) { g.fillText('Gradiente ≈ 0: no hay dirección de descenso.', 20, 30); return; }
+  const v0 = P.map(getP), amax = 3 * cfg.eta, xs = [], ys = [];
+  for (let k = 0; k <= 120; k++) { const a = amax * k / 120; P.forEach((p, n) => setP(p, v0[n] - a * gm[n])); xs.push(a); ys.push(errorMedio()); }
+  P.forEach((p, n) => setP(p, v0[n]));
+  const y0 = Math.min(...ys), y1 = Math.max(...ys), pad = (y1 - y0) * 0.15 || y1 * 0.05 + 1e-6, ymax = y1 + pad, ymin = Math.max(0, y0 - pad);
+  const { px, py } = marco(g, w, h, 0, amax, ymin, ymax, 'α: tamaño del paso a lo largo de −∇E', ymax - ymin < 0.01 ? 5 : 3);
+  g.beginPath(); xs.forEach((x, k) => k ? g.lineTo(px(x), py(ys[k])) : g.moveTo(px(x), py(ys[k]))); g.strokeStyle = '#185FA5'; g.lineWidth = 2.5; g.stroke();
+  const kb = ys.indexOf(Math.min(...ys)), ke = 40;
+  g.setLineDash([4, 4]); g.strokeStyle = '#BA7517'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(px(cfg.eta), py(ymin)); g.lineTo(px(cfg.eta), py(ymax)); g.stroke(); g.setLineDash([]);
+  g.beginPath(); g.arc(px(xs[kb]), py(ys[kb]), 5, 0, 7); g.fillStyle = '#1D9E75'; g.fill();
+  g.beginPath(); g.arc(px(cfg.eta), py(ys[ke]), 6, 0, 7); g.fillStyle = '#BA7517'; g.fill();
+  g.beginPath(); g.arc(px(0), py(ys[0]), 7, 0, 7); g.fillStyle = '#fff'; g.fill(); g.strokeStyle = '#A32D2D'; g.lineWidth = 3; g.stroke();
+  g.fillStyle = '#1f1e1c'; g.fillText(`|∇E| = ${fmt(gn, 4)}${` (los ${P.length} parámetros)`}`, 50, 14);
+  g.fillStyle = ys[ke] < ys[0] ? '#0F6E56' : '#A32D2D';
+  g.fillText(`con η = ${fmt(cfg.eta)}: E pasa de ${fmt(ys[0], 4)} a ${fmt(ys[ke], 4)} (${ys[ke] < ys[0] ? 'baja' : 'sube'}); mejor α ≈ ${fmt(xs[kb], 2)}`, 50, 30);
+}
+let vista3d = { yaw: -0.75, pit: 0.6 };
+function dibujar3D(g, w, h, gr, N) {
+  const flat = gr.flat(), lo = Math.min(...flat), hi = Math.max(...flat), Hh = e => (e - lo) / ((hi - lo) || 1) * 0.7;
+  const S = Math.min(w, h * 1.4) * 0.33, cx = w / 2, cy = h * 0.64, { yaw, pit } = vista3d;
+  const pr = (u, v, z) => { const X1 = u * Math.cos(yaw) - v * Math.sin(yaw), Y1 = u * Math.sin(yaw) + v * Math.cos(yaw); return [cx + S * X1, cy - S * (Y1 * Math.sin(pit) + z * Math.cos(pit)), Y1 * Math.cos(pit) - z * Math.sin(pit)]; };
+  const uv = i => -1 + 2 * i / (N - 1), q = [];
+  for (let j = 0; j < N - 1; j++) for (let i = 0; i < N - 1; i++) {
+    const c = [[i, j], [i + 1, j], [i + 1, j + 1], [i, j + 1]].map(([a, b]) => pr(uv(a), -uv(b), Hh(gr[b][a])));
+    q.push({ c, d: (c[0][2] + c[1][2] + c[2][2] + c[3][2]) / 4, f: ((gr[j][i] + gr[j][i + 1] + gr[j + 1][i] + gr[j + 1][i + 1]) / 4 - lo) / ((hi - lo) || 1) });
+  }
+  q.sort((a, b) => b.d - a.d);
+  [[pr(-1, -1, 0), pr(1, -1, 0), '#378ADD'], [pr(-1, -1, 0), pr(-1, 1, 0), '#7F77DD']].forEach(([a, b, c]) => { g.strokeStyle = c; g.lineWidth = 2.5; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); });
+  const c0 = [12, 68, 124], c1 = [230, 241, 251];
+  q.forEach(o => { g.beginPath(); o.c.forEach((p, k) => k ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.closePath();
+    g.fillStyle = `rgb(${c0.map((v, k) => Math.round(v + (c1[k] - v) * Math.pow(o.f, 0.8))).join(',')})`; g.fill(); g.strokeStyle = 'rgba(255,255,255,.16)'; g.lineWidth = 0.6; g.stroke(); });
+  const aUV = (a, b) => [(a - slice.cx) / slice.R, (b - slice.cy) / slice.R];
+  const pA = P[ejeA], pB = P[ejeB], va = getP(pA), vb = getP(pB), EL = (a, b) => { setP(pA, a); setP(pB, b); const e = errorMedio(); setP(pA, va); setP(pB, vb); return e; };
+  const tr = st.tray.slice(-300);
+  g.beginPath(); tr.forEach(([a, b], k) => { const [u, v] = aUV(a, b); if (Math.abs(u) > 1 || Math.abs(v) > 1) return; const p = pr(u, v, Hh(Math.min(Math.max(EL(a, b), lo), hi)) + 0.01); k ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]); });
+  g.strokeStyle = '#fff'; g.lineWidth = 3; g.stroke(); g.strokeStyle = '#A32D2D'; g.lineWidth = 1.5; g.stroke();
+  const [u, v] = aUV(va, vb), e = errorMedio(), p = pr(u, v, Hh(Math.min(Math.max(e, lo), hi)) + 0.02);
+  g.beginPath(); g.arc(p[0], p[1], 8, 0, 7); g.fillStyle = '#D85A30'; g.fill(); g.strokeStyle = '#fff'; g.lineWidth = 2; g.stroke();
+  g.font = '12px var(--mono), monospace'; g.fillStyle = '#1f1e1c'; g.fillText(`E = ${fmt(e, 4)}`, 8, 16);
+  g.fillStyle = '#378ADD'; g.fillText(`${pA.n} = ${fmt(va, 2)}`, 8, 32); g.fillStyle = '#7F77DD'; g.fillText(`${pB.n} = ${fmt(vb, 2)}`, 8, 48);
+}
+function dibujarSuperficie(forzar) {
+  const vistaS = $('sVista').value;
+  if (!data.X.length) { const { g } = lienzo('cS'); g.fillStyle = '#6b6a64'; g.font = '13px system-ui'; g.fillText('Sin datos todavía.', 20, 30); return; }
+  $('sLeg').textContent = LEYENDA[vistaS]; ajustarControles(vistaS);
+  $('cS').classList.toggle('rot', vistaS === '3d');
+  if (vistaS === 'peso') { $('sliceNote').textContent = ''; return dibujarCorte1(); }
+  if (vistaS === 'dir') { $('sliceNote').textContent = ''; return dibujarDir(); }
+  const { g, w, h } = lienzo('cS'); if (w < 10 || h < 10) return;
+  const pA = P[ejeA], pB = P[ejeB], va = getP(pA), vb = getP(pB), N = 46;
+  if (slice.key === '' || Math.abs(va - slice.cx) > slice.R * 0.9 || Math.abs(vb - slice.cy) > slice.R * 0.9) { slice.cx = va; slice.cy = vb; slice.key = 'x'; slice.grid = null; }
+  const ahora = performance.now();
+  if (!slice.grid || (!cfg.freeze && (forzar || ahora - slice.t > 150))) {
+    const gr = [];
+    for (let j = 0; j < N; j++) { gr.push([]); for (let i = 0; i < N; i++) {
+      setP(pA, slice.cx - slice.R + 2 * slice.R * i / (N - 1)); setP(pB, slice.cy + slice.R - 2 * slice.R * j / (N - 1)); gr[j].push(errorMedio()); } }
+    setP(pA, va); setP(pB, vb); slice.grid = gr; slice.t = ahora;
+  }
+  $('sliceNote').textContent = cfg.freeze ? 'Solo se entrenan estos dos pesos: la superficie está fija.' : 'Los demás pesos también cambian: la superficie se recalcula.';
+  if (vistaS === '3d') return dibujar3D(g, w, h, slice.grid, N);
+  const gr = slice.grid, flat = gr.flat().map(v => Math.log(v + 1e-4)), lo = Math.min(...flat), hi = Math.max(...flat);
+  const S = Math.min(w - 40, h - 26), ox = 34 + (w - 40 - S) / 2, oy = 4, cell = S / N, bandas = 12;
+  const c0 = [12, 68, 124], c1 = [230, 241, 251];
+  for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
+    let f = (Math.log(gr[j][i] + 1e-4) - lo) / (hi - lo || 1); f = Math.floor(f * bandas) / bandas;
+    g.fillStyle = `rgb(${c0.map((v, k) => Math.round(v + (c1[k] - v) * f)).join(',')})`; g.fillRect(ox + i * cell, oy + j * cell, cell + 0.6, cell + 0.6);
+  }
+  const px = v => ox + (v - slice.cx + slice.R) / (2 * slice.R) * S, py = v => oy + (slice.cy + slice.R - v) / (2 * slice.R) * S;
+  Object.assign(slice, { ox, oy, S });
+  g.save(); g.beginPath(); g.rect(ox, oy, S, S); g.clip();
+  g.beginPath(); st.tray.forEach(([a, b], k) => k ? g.lineTo(px(a), py(b)) : g.moveTo(px(a), py(b)));
+  g.strokeStyle = '#fff'; g.lineWidth = 2; g.stroke(); g.strokeStyle = '#1f1e1c'; g.lineWidth = 0.8; g.stroke();
+  const gm = gradMedio(), gx = -gm[ejeA], gy = -gm[ejeB], gn = Math.hypot(gx, gy);
+  if (gn > 1e-9) { const L = 38, ex = px(va) + gx / gn * L, ey = py(vb) - gy / gn * L, an = Math.atan2(ey - py(vb), ex - px(va));
+    g.strokeStyle = '#BA7517'; g.fillStyle = '#BA7517'; g.lineWidth = 3; g.beginPath(); g.moveTo(px(va), py(vb)); g.lineTo(ex, ey); g.stroke();
+    g.beginPath(); g.moveTo(ex + 3 * Math.cos(an), ey + 3 * Math.sin(an)); g.lineTo(ex - 9 * Math.cos(an - 0.45), ey - 9 * Math.sin(an - 0.45)); g.lineTo(ex - 9 * Math.cos(an + 0.45), ey - 9 * Math.sin(an + 0.45)); g.fill(); }
+  g.beginPath(); g.arc(px(va), py(vb), 6, 0, 7); g.fillStyle = '#fff'; g.fill(); g.strokeStyle = '#A32D2D'; g.lineWidth = 3; g.stroke();
+  g.restore();
+  g.fillStyle = '#6b6a64'; g.font = '11px var(--mono), monospace';
+  g.fillText(fmt(slice.cx - slice.R, 1), ox, oy + S + 13); const t1 = fmt(slice.cx + slice.R, 1); g.fillText(t1, ox + S - g.measureText(t1).width, oy + S + 13);
+  const ta = pA.n; g.fillStyle = '#378ADD'; g.fillText(ta, ox + S / 2 - g.measureText(ta).width / 2, oy + S + 13);
+  g.save(); g.translate(ox - 6, oy + S / 2); g.rotate(-Math.PI / 2); g.fillStyle = '#7F77DD'; g.fillText(pB.n, -g.measureText(pB.n).width / 2, 0); g.restore();
+  g.fillStyle = '#6b6a64'; const tb = fmt(slice.cy + slice.R, 1), tb0 = fmt(slice.cy - slice.R, 1);
+  g.fillText(tb, ox - 6 - g.measureText(tb).width, oy + 10); g.fillText(tb0, ox - 6 - g.measureText(tb0).width, oy + S);
+}
+
+/* ===================== dibujo: cálculo y tabla ===================== */
+const NOMF = { f: 'hacia adelante', e: 'error', b: 'retropropagación', a: 'acumular gradiente', u: 'actualizar pesos' };
+function textoFase() {
+  const c = st.c;
+  if (!c) return `<span class="m">Presiona Fase (barra espaciadora) para propagar la primera muestra.</span><br>` +
+    `<span class="m">adelante</span> z = Σ w·a + b, &nbsp;a = f(z)<br><span class="m">error</span> ${cfg.loss === 'ecm' ? 'L = ½(ŷ − t)²' : 'L = −[t·ln ŷ + (1 − t)·ln(1 − ŷ)]'}<br>` +
+    `<span class="m">atrás</span> δ_salida = ${cfg.loss === 'ecm' ? '(ŷ − t)·ŷ(1 − ŷ)' : 'ŷ − t'}, &nbsp;δ_oculta = (Σ w·δ)·f′(z), &nbsp;∂L/∂w = δ·a_origen<br>` +
+    `<span class="m">actualizar</span> w ← w − η·∂L/∂w`;
+  const ph = st.seq[st.k], l = +ph.slice(1), out = [], MAXL = 7;
+  if (ph[0] === 'f') {
+    const capa = l + 1, act = ACT[net.acts[capa]];
+    out.push(`<span class="m">capa ${capa} (${act.s}): z = Σ w·a + b, a = ${act.s}(z)</span>`);
+    for (let j = 0; j < net.sizes[capa] && out.length < MAXL; j++) {
+      const terms = net.sizes[l] <= 3 ? net.W[l][j].map((w, i) => `${par(w)}·${fmt(c.a[l][i])}`).join(' + ') + ` + ${par(net.B[l][j])}` : 'Σ w·a + b';
+      out.push(`z(${nombre(capa, j)}) = ${terms} = ${fmt(c.z[capa][j], 3)} → a = ${fmt(c.a[capa][j], 3)}`);
+    }
+  } else if (ph === 'e') {
+    const y = c.a[net.F][0];
+    out.push(`<span class="m">salida y objetivo</span> ŷ = ${fmt(y, 3)}, t = ${c.t}`);
+    out.push(cfg.loss === 'ecm' ? `L = ½(ŷ − t)² = ½(${fmt(y, 3)} − ${c.t})² = <b>${fmt(c.L, 4)}</b>`
+                                : `L = −[t·ln ŷ + (1 − t)·ln(1 − ŷ)] = <b>${fmt(c.L, 4)}</b>`);
+  } else if (ph[0] === 'b') {
+    const capa = l + 1;
+    if (capa === net.F) { const y = c.a[net.F][0];
+      out.push(cfg.loss === 'ecm' ? `δ(ŷ) = (ŷ − t)·ŷ(1 − ŷ) = (${fmt(y, 3)} − ${c.t})·${fmt(y, 3)}·(1 − ${fmt(y, 3)}) = <b>${fmt(c.d[capa][0], 4)}</b>`
+                                  : `δ(ŷ) = ŷ − t = ${fmt(y, 3)} − ${c.t} = <b>${fmt(c.d[capa][0], 4)}</b> <span class="m">(con entropía cruzada se cancela σ′)</span>`);
+    } else {
+      const act = ACT[net.acts[capa]];
+      out.push(`<span class="m">capa ${capa}: δ = (Σ w·δ_siguiente)·f′(z)</span>`);
+      for (let i = 0; i < net.sizes[capa] && out.length < 4; i++) {
+        const nxt = net.sizes[capa + 1] <= 3 ? net.W[capa].map((row, j) => `${par(row[i])}·${par(c.d[capa + 1][j], 3)}`).join(' + ') : 'Σ w·δ';
+        out.push(`δ(${nombre(capa, i)}) = (${nxt})·${act.ds(c.a[capa][i], c.z[capa][i])} = <b>${fmt(c.d[capa][i], 4)}</b>`);
+      }
+    }
+    out.push(`<span class="m">gradientes de la capa ${capa}: ∂L/∂w = δ(destino)·a(origen)</span>`);
+    const ps = P.filter(p => p.l === l); let s = [];
+    ps.forEach(p => s.push(`${p.n}: ${fmt(gradP(c, p), 4)}`));
+    for (let k = 0; k < s.length && out.length < MAXL + 1; k += 3) out.push(s.slice(k, k + 3).join(' &nbsp; '));
+  } else if (ph === 'a') {
+    out.push(`<span class="m">Lote completo:</span> se suma el gradiente de esta muestra al acumulado (muestra ${c.idx + 1} de ${data.X.length}).`);
+    out.push(c.idx === data.X.length - 1 ? 'Era la última muestra: sigue la actualización con el promedio.' : 'Los pesos todavía no cambian.');
+  } else if (ph[0] === 'u') {
+    const u = leeU(ph), dest = u.j === undefined ? `la capa ${u.l + 1}` : nombre(u.l + 1, u.j);
+    out.push(`<span class="m">actualizar los pesos que llegan a ${dest} y su sesgo: w ← w − η·∂L/∂w, η = ${fmt(cfg.eta)}${cfg.modo === 'lote' ? ', ∂L/∂w = promedio del lote' : ''}</span>`);
+    let k = 0; P.forEach((p, n) => { if (!esDe(p, ph) || k >= MAXL) return;
+      if (st.gUsado[n] === 0 && cfg.freeze) return; k++;
+      out.push(`${p.n}: ${fmt(st.antes[n], 3)} − ${fmt(cfg.eta)}·(${fmt(st.gUsado[n], 4)}) = <b>${fmt(st.despues[n], 3)}</b>${st.gUsado[n] === 0 ? ' <span class="m">(gradiente 0: no cambia)</span>' : ''}`); });
+    const resto = P.filter((p, n) => esDe(p, ph)).length - k; if (resto > 0 && !cfg.freeze) out.push(`<span class="m">… y ${resto} más (ver la tabla)</span>`);
+  }
+  return out.join('<br>');
+}
+function dibujarTabla() {
+  const c = st.c, H = hechas();
+  let s = '<thead><tr><th>neurona</th><th>z</th><th>a</th><th>δ</th><th></th></tr></thead><tbody>';
+  for (let l = 1; l <= net.F; l++) for (let j = 0; j < net.sizes[l]; j++) {
+    const fw = c && H.f >= l - 1, bw = c && H.b <= l - 1;
+    s += `<tr><td>${nombre(l, j)} <span class="m">(${ACT[net.acts[l]].s})</span></td><td>${fw ? fmt(c.z[l][j], 3) : '·'}</td><td>${fw ? fmt(c.a[l][j], 3) : '·'}</td><td class="${bw && c.d[l][j] < 0 ? 'neg' : ''}">${bw ? fmt(c.d[l][j], 4) : '·'}</td><td></td></tr>`;
+  }
+  s += `<tr class="sub"><td colspan="5">parámetros${cfg.modo === 'lote' ? ' (Δw usa el promedio del lote)' : ''}</td></tr>`;
+  s += '<tr><th>parámetro</th><th>w antes</th><th>∂L/∂w</th><th>Δw</th><th>w después</th></tr>';
+  P.forEach((p, n) => {
+    const gd = c && H.b <= p.l, up = !!(st.upd && st.upd[n]);
+    const dw = up ? -cfg.eta * st.gUsado[n] : null;
+    const ph = st.c ? st.seq[st.k] : '', act = ph && ph[0] === 'u' && esDe(p, ph);
+    s += `<tr class="${act ? 'act' : n === ejeA || n === ejeB ? 'sel' : ''}"><td>${p.n}</td><td>${fmt(st.antes[n], 3)}</td><td>${gd ? fmt(gradP(c, p), 4) : '·'}</td>` +
+         `<td class="${dw ? 'chg' : ''}">${dw !== null ? fmt(dw, 4) : '·'}</td><td>${up ? fmt(st.despues[n], 3) : '·'}</td></tr>`;
+  });
+  $('tab').innerHTML = s + '</tbody>';
+}
+
+function dibujar(anim) {
+  dibujarRed(anim && !timer); dibujarFrontera(); dibujarError(); dibujarSuperficie(anim);
+  if (!timer) { $('calc').innerHTML = textoFase(); dibujarTabla(); }
+  else $('calc').innerHTML = `<span class="m">Entrenando… (época ${st.ep - 1})</span><br>Pausa para ver el detalle de una muestra.`;
+  const c = st.c, ph = c ? st.seq[st.k] : null;
+  $('status').textContent = st.fin ? st.fin : c ? `época ${st.ep - (st.done && st.idx === 0 ? 1 : 0)} · muestra ${c.idx + 1} de ${data.X.length} · ${NOMF[ph[0]]}${'fb'.includes(ph[0]) ? ' capa ' + (+ph.slice(1) + 1) : ph[0] === 'u' ? (leeU(ph).j === undefined ? ' capa ' + (leeU(ph).l + 1) : ' de ' + nombre(leeU(ph).l + 1, leeU(ph).j)) : ''}` : `época 1 · ${data.X.length} muestras · ${P.length} parámetros`;
+}
+
+/* ===================== eventos ===================== */
+const accion = f => () => { if (timer) parar(); st.fin = ''; if (hayDatos()) f(); dibujar(true); };
+$('bFase').onclick = accion(fase); $('bIt').onclick = accion(iteracion); $('bEp').onclick = accion(epoca);
+$('bTrain').onclick = () => { st.fin = ''; if (!hayDatos()) { dibujar(false); return; } entrenar(); }; $('bReset').onclick = reiniciar;
+$('bPres').onclick = () => { document.body.classList.toggle('pres'); dibujar(false); };
+['sLoss', 'sModo', 'iEta', 'iSeed'].forEach(id => $(id).onchange = reiniciar);
+$('sNC').onchange = () => { construirCapas(); reiniciar(); };
+function extrasDatos() {
+  const v = $('sData').value; $('xManual').hidden = v !== 'manual'; $('csvBox').hidden = v !== 'csv'; if (v === 'csv' && !csvDatos.X.length) $('csvBox').open = true;
+  $('cB').classList.toggle('clic', v === 'manual');
+}
+$('sData').onchange = () => { extrasDatos(); reiniciar(); };
+$('xManual').querySelectorAll('button[data-c]').forEach(b => b.onclick = () => { claseClic = +b.dataset.c; $('xManual').querySelectorAll('button[data-c]').forEach(o => o.classList.toggle('on', o === b)); });
+$('bBorrar').onclick = () => { propios.X.length = 0; propios.T.length = 0; parar(); nuevoEstado(); };
+function agregarPunto(ev, clase) {
+  if (cfg.datos !== 'manual' || !fr) return; ev.preventDefault();
+  const rc = $('cB').getBoundingClientRect(), x = ev.clientX - rc.left, y = ev.clientY - rc.top;
+  if (x < fr.ox || x > fr.ox + fr.S || y < fr.oy || y > fr.oy + fr.S) return;
+  propios.X.push([fr.cx - fr.span / 2 + (x - fr.ox) / fr.S * fr.span, fr.cy + fr.span / 2 - (y - fr.oy) / fr.S * fr.span]); propios.T.push(clase);
+  parar(); nuevoEstado();
+}
+$('cB').onclick = ev => agregarPunto(ev, claseClic);
+$('cB').oncontextmenu = ev => agregarPunto(ev, 1 - claseClic);
+function leerCSV(txt, estand) {
+  const filas = txt.trim().split(/\r?\n/).map(l => l.trim()).filter(l => l);
+  if (!filas.length) throw 'Pega al menos una fila: x1, x2, clase.';
+  const sep = filas[0].includes(';') ? ';' : filas[0].includes('\t') ? '\t' : ',';
+  const num = v => parseFloat(sep === ';' ? v.replace(',', '.') : v);
+  const X = [], lab = [];
+  filas.forEach((l, k) => { const c = l.split(sep).map(q => q.trim());
+    if (c.length < 3) throw `Fila ${k + 1}: se esperan 3 columnas (x1, x2, clase).`;
+    const a = num(c[0]), b = num(c[1]);
+    if (isNaN(a) || isNaN(b)) { if (k === 0) return; throw `Fila ${k + 1}: x1 y x2 deben ser números.`; }
+    X.push([a, b]); lab.push(c[2]); });
+  if (X.length < 2) throw 'Se necesitan al menos 2 filas de datos.';
+  const cls = [...new Set(lab)].sort();
+  if (cls.length > 2) throw `Hay ${cls.length} clases (${cls.slice(0, 5).join(', ')}): el simulador admite 2.`;
+  const T = lab.map(v => cls.length === 1 ? (+v ? 1 : 0) : (v === cls[1] ? 1 : 0));
+  if (estand) for (let d = 0; d < 2; d++) { const m = X.reduce((s, p) => s + p[d], 0) / X.length, sd = Math.sqrt(X.reduce((s, p) => s + (p[d] - m) ** 2, 0) / X.length) || 1; X.forEach(p => p[d] = (p[d] - m) / sd); }
+  return { X, T, nota: `${X.length} puntos cargados; clase 1 = «${cls[cls.length - 1]}»` };
+}
+$('bCSV').onclick = () => {
+  try { const r = leerCSV($('taCSV').value, $('cEst').checked); csvDatos = { X: r.X, T: r.T };
+    $('csvMsg').style.color = 'var(--ok)'; $('csvMsg').textContent = r.nota; $('csvBox').querySelector('summary').textContent = `Datos CSV: ${r.X.length} puntos ▾`; $('csvBox').open = false; reiniciar(); }
+  catch (e) { $('csvMsg').style.color = 'var(--danger)'; $('csvMsg').textContent = e; }
+};
+$('taCSV').oninput = () => { $('csvMsg').textContent = ''; };
+$('sA').onchange = () => cambiarEjes(+$('sA').value, ejeB); $('sB').onchange = () => cambiarEjes(ejeA, +$('sB').value);
+$('cS').onclick = ev => {
+  if (timer || !slice.S || $('sVista').value !== 'cont') return;
+  const rc = $('cS').getBoundingClientRect(), x = ev.clientX - rc.left, y = ev.clientY - rc.top;
+  if (x < slice.ox || x > slice.ox + slice.S || y < slice.oy || y > slice.oy + slice.S) return;
+  setP(P[ejeA], slice.cx - slice.R + (x - slice.ox) / slice.S * 2 * slice.R); setP(P[ejeB], slice.cy + slice.R - (y - slice.oy) / slice.S * 2 * slice.R);
+  st.c = null; st.done = true; st.idx = 0; st.antes = P.map(getP); st.despues = null; st.gUsado = null; st.fin = '';
+  st.tray = [[getP(P[ejeA]), getP(P[ejeB])]]; if (!cfg.freeze) slice.key = ''; dibujar(true);
+};
+let arrastre = null;
+$('cS').onpointerdown = ev => { if ($('sVista').value !== '3d') return; arrastre = [ev.clientX, ev.clientY, vista3d.yaw, vista3d.pit]; $('cS').setPointerCapture(ev.pointerId); };
+$('cS').onpointermove = ev => { if (!arrastre) return; vista3d.yaw = arrastre[2] + (ev.clientX - arrastre[0]) * 0.01; vista3d.pit = Math.max(0.1, Math.min(1.45, arrastre[3] + (ev.clientY - arrastre[1]) * 0.01)); dibujarSuperficie(false); };
+$('cS').onpointerup = () => { arrastre = null; };
+$('sVista').onchange = () => {
+  if ($('sVista').value === 'dir' && $('cFreeze').checked) { $('cFreeze').checked = false; cfg.freeze = false; }
+  slice.key = ''; dibujar(true);
+};
+$('cFreeze').onchange = () => { cfg.freeze = $('cFreeze').checked; slice.key = ''; dibujar(false); };
+window.addEventListener('resize', () => dibujar(false));
+document.addEventListener('keydown', ev => {
+  if (ev.altKey || ev.ctrlKey || ev.metaKey || ev.target.closest('input, select, textarea, button, a, summary, [contenteditable]')) return;
+  const k = ev.key.toLowerCase();
+  if (ev.code === 'Space') { ev.preventDefault(); accion(fase)(); }
+  else if (k === 'i') accion(iteracion)(); else if (k === 'e') accion(epoca)(); else if (k === 'p') { st.fin = ''; if (hayDatos()) entrenar(); else dibujar(false); } else if (k === 'r') reiniciar();
+});
+construirCapas(); extrasDatos(); reiniciar();
+if (document.fonts) document.fonts.ready.then(() => dibujar(false));
+</script>
+</body>
+</html>

@@ -6,6 +6,7 @@ Sitio académico estático de docencia, investigación y recursos didácticos.
 - **Repositorio:** https://github.com/orlmaldonado/web
 - **Recursos:** https://orlmaldonado.github.io/web/recursos.html
 - **Perceptrón:** https://orlmaldonado.github.io/web/animaciones/perceptron_simple.html
+- **Perceptrón multicapa:** https://orlmaldonado.github.io/web/animaciones/perceptron_multicapa.html
 - **Publicación:** GitHub Pages, rama `main`, archivos en la raíz.
 
 ## Continuar el trabajo
@@ -15,6 +16,8 @@ Leer primero [BITACORA.md](BITACORA.md): contiene versiones anteriores, formato,
 ## Archivos activos
 
 `index.html`, `docencia.html`, `investigacion.html`, `recursos.html` y `blog.html` comparten `styles.css`. El retrato está en `assets/`. El simulador está en `animaciones/perceptron_simple.html` y su adaptación visual en `animaciones/perceptron.css`.
+
+`animaciones/perceptron_multicapa.html` contiene el segundo simulador, con retropropagación y gráficas del error. Reutiliza `perceptron.css` y añade `perceptron_multicapa.css` para conservar su distribución de tres columnas.
 
 La fuente activa está en la raíz. `propuesta-multipagina/` conserva la propuesta histórica y no se publica.
 

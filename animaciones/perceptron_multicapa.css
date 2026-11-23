@@ -1,0 +1,15 @@
+/* Adaptación al sitio académico sin alterar la cuadrícula del simulador. */
+body.multicapa{font-size:15px}
+body.multicapa.pres{font-size:18px}
+.multicapa .top{padding:3px 0 6px}
+.multicapa .card{padding:8px 12px}
+.multicapa .card h3{font-size:.875em}
+.multicapa #status{font-size:1em}
+.multicapa select,.multicapa .pop,.multicapa .pop textarea{border-radius:4px}
+.multicapa #bTrain{background:var(--accent);border-color:var(--accent);color:#fff}
+.multicapa #bTrain:hover{background:#174d80}
+.multicapa .pop{max-width:calc(100vw - 32px)}
+.multicapa .sim-context>a{font-size:13px}
+@media(max-width:1000px),(max-height:600px){.multicapa main{height:auto}.multicapa .app{grid-template-columns:1fr}.multicapa .card{min-height:300px}}
+@media(max-width:650px){.multicapa .sim-context{font-size:12px}.multicapa .pop{position:fixed;top:100px;left:16px;max-height:calc(100dvh - 116px);overflow:auto}}
+@media(prefers-reduced-motion:reduce){.multicapa .fwd,.multicapa .bwd,.multicapa .upd{animation:none}}
